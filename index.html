@@ -6,7 +6,7 @@
     <title>Ilya Altman</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Montserrat:wght@300;400&display=swap" rel="stylesheet">
     <style>
         body {
             margin: 0;
@@ -16,9 +16,9 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
-            color: #fff;
+            font-family: 'Montserrat', sans-serif;
+            background: linear-gradient(135deg, #f0f4f8 0%, #d9e2ec 100%);
+            color: #333;
             line-height: 1.6;
         }
         .container {
@@ -28,15 +28,12 @@
             animation: fadeIn 2s ease-out;
         }
         h1 {
-            font-family: 'Playfair Display', serif;
+            font-family: 'Roboto', sans-serif;
             font-size: 3.5rem;
             margin-bottom: 2rem;
             font-weight: 700;
             letter-spacing: -0.02em;
-            background: linear-gradient(120deg, #ffffff, #e0e0e0);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            text-shadow: 0 0 30px rgba(255,255,255,0.1);
+            color: #2b2d42;
         }
         .timer {
             font-size: 2rem;
@@ -48,11 +45,11 @@
             gap: 1rem;
         }
         .time-unit {
-            background: rgba(255, 255, 255, 0.05);
+            background: #ffffff;
             padding: 1rem;
             border-radius: 8px;
             min-width: 120px;
-            backdrop-filter: blur(5px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             transition: transform 0.3s ease;
         }
         .time-unit:hover {
@@ -62,19 +59,22 @@
             font-size: 2.5rem;
             font-weight: 400;
             margin-bottom: 0.5rem;
+            color: #2b2d42;
         }
         .time-label {
             font-size: 0.9rem;
             opacity: 0.7;
             text-transform: uppercase;
             letter-spacing: 0.1em;
+            color: #8d99ae;
         }
         .message {
             font-size: 1.2rem;
             opacity: 0.8;
             margin-top: 2rem;
-            font-family: 'Playfair Display', serif;
+            font-family: 'Roboto', sans-serif;
             font-style: italic;
+            color: #2b2d42;
         }
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(20px); }
