@@ -13,6 +13,7 @@
             --secondary-color: #86868b;
             --background-color: #fbfbfd;
             --text-color: #1d1d1f;
+            --water-color: rgba(0, 113, 227, 0.1);
         }
 
         body {
@@ -27,12 +28,36 @@
             background-color: var(--background-color);
             color: var(--text-color);
             -webkit-font-smoothing: antialiased;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .water-fill {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: var(--water-color);
+            transition: height 0.5s ease-out;
+            z-index: 1;
+        }
+
+        .wave {
+            position: absolute;
+            top: -10px;
+            left: 0;
+            width: 100%;
+            height: 10px;
+            background: var(--water-color);
+            filter: blur(1px);
         }
 
         .container {
             text-align: center;
             padding: 2rem;
             max-width: 800px;
+            position: relative;
+            z-index: 2;
         }
 
         h1 {
@@ -43,35 +68,34 @@
             margin-bottom: 0.5em;
         }
 
-        .timer-container {
-            margin: 2rem 0;
-            font-size: 96px;
-            font-weight: 300;
-            letter-spacing: -0.015em;
-            line-height: 1.1;
-            color: var(--primary-color);
-        }
-
         .timer {
-            display: inline-flex;
-            gap: 0.3em;
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+            margin: 2rem 0;
         }
 
         .time-segment {
             display: flex;
-            align-items: baseline;
+            flex-direction: column;
+            align-items: center;
         }
 
         .time-value {
-            font-feature-settings: "tnum";
+            font-size: 48px;
             font-weight: 400;
+            color: var(--primary-color);
+            font-feature-settings: "tnum";
+            min-width: 80px;
         }
 
         .time-label {
-            font-size: 1rem;
+            font-size: 14px;
             color: var(--secondary-color);
-            margin-left: 0.5em;
-            font-weight: 400;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-top: 0.5rem;
         }
 
         .message {
@@ -83,40 +107,23 @@
             margin-top: 2rem;
         }
 
-        .progress-container {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 2px;
-            background: rgba(0,0,0,0.1);
-            overflow: hidden;
-        }
-
-        .progress-bar {
-            height: 100%;
-            width: 0%;
-            background: var(--primary-color);
-            transition: width 0.3s ease-out;
-        }
-
         @media (max-width: 734px) {
             h1 { font-size: 40px; }
-            .timer-container { font-size: 48px; }
+            .time-value { font-size: 32px; min-width: 60px; }
             .message { font-size: 17px; }
+            .timer { gap: 1rem; }
         }
     </style>
 </head>
 <body>
+    <div class="water-fill" id="water-fill">
+        <div class="wave"></div>
+    </div>
+    
     <div class="container">
         <h1>Ilya Altman</h1>
-        <div class="timer-container">
-            <div class="timer" id="timer"></div>
-        </div>
-        <div class="message">A journey of growth and discovery</div>
-    </div>
-    <div class="progress-container">
-        <div class="progress-bar" id="progress"></div>
+        <div class="timer" id="timer"></div>
+        <div class="message">Growing stronger every second</div>
     </div>
 
     <script>
@@ -128,27 +135,46 @@
             const diff = now - birthDate;
             const totalJourney = eighteenYears - birthDate;
             
-            // Update progress bar
+            // Update water fill
             const progress = ((now - birthDate) / (eighteenYears - birthDate)) * 100;
-            document.getElementById('progress').style.width = `${Math.max(0, Math.min(progress, 100))}%`;
+            const waterFill = document.getElementById('water-fill');
+            waterFill.style.height = `${Math.max(0, Math.min(progress, 100))}%`;
 
             if (diff < 0) {
                 const countdown = Math.abs(diff);
                 const days = Math.floor(countdown / (1000 * 60 * 60 * 24));
-                document.getElementById('timer').innerHTML = `
-                    <div class="time-segment">
-                        <span class="time-value">${days}</span>
-                        <span class="time-label">days until arrival</span>
-                    </div>
-                `;
-                return;
-            }
+                const hours = Math.floor((countdown % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((countdown % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((countdown % (1000 * 60)) / 1000);
 
-            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-            document.getElementById('timer').innerHTML = `
+                document.getElementById('timer').innerHTML = getTimeHTML(days, hours, minutes, seconds, 'until arrival');
+            } else {
+                const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+                document.getElementById('timer').innerHTML = getTimeHTML(days, hours, minutes, seconds, 'of life');
+            }
+        }
+
+        function getTimeHTML(days, hours, minutes, seconds, suffix) {
+            return `
                 <div class="time-segment">
                     <span class="time-value">${days}</span>
-                    <span class="time-label">days of life</span>
+                    <span class="time-label">days ${suffix}</span>
+                </div>
+                <div class="time-segment">
+                    <span class="time-value">${String(hours).padStart(2, '0')}</span>
+                    <span class="time-label">hours</span>
+                </div>
+                <div class="time-segment">
+                    <span class="time-value">${String(minutes).padStart(2, '0')}</span>
+                    <span class="time-label">minutes</span>
+                </div>
+                <div class="time-segment">
+                    <span class="time-value">${String(seconds).padStart(2, '0')}</span>
+                    <span class="time-label">seconds</span>
                 </div>
             `;
         }
