@@ -391,18 +391,27 @@
                 const minutes = Math.floor((countdown % (1000 * 60 * 60)) / (1000 * 60));
                 const seconds = Math.floor((countdown % (1000 * 60)) / 1000);
 
-                document.getElementById('timer').innerHTML = getTimeHTML(days, hours, minutes, seconds, 'until arrival');
+                document.getElementById('timer').innerHTML = getTimeHTML(days, hours, minutes, seconds, 'until arrival', false);
             } else {
+                // Calculate years and remaining days
+                let years = now.getFullYear() - birthDate.getFullYear();
+                const birthDateThisYear = new Date(now.getFullYear(), birthDate.getMonth(), birthDate.getDate());
+                
+                // Adjust if birthday hasn't occurred this year
+                if (now < birthDateThisYear) {
+                    years--;
+                }
+                
                 const days = Math.floor(diff / (1000 * 60 * 60 * 24));
                 const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
                 const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
                 const seconds = Math.floor((diff % (1000 * 60)) / 1000);
 
-                document.getElementById('timer').innerHTML = getTimeHTML(days, hours, minutes, seconds, 'of life');
+                document.getElementById('timer').innerHTML = getTimeHTML(days, hours, minutes, seconds, 'of life', years);
             }
 
             const messageElement = document.querySelector('.message');
-            const newMessage = getAgeMessage(days);
+            const newMessage = getAgeMessage(years ? days % 365 : days);
 
             if (messageElement.dataset.lastMessage !== newMessage) {
                 messageElement.style.opacity = '0';
@@ -414,11 +423,17 @@
             }
         }
 
-        function getTimeHTML(days, hours, minutes, seconds, suffix) {
+        function getTimeHTML(days, hours, minutes, seconds, suffix, years) {
             return `
+                ${years ? `
                 <div class="time-segment">
-                    <span class="time-value">${days}</span>
-                    <span class="time-label">days ${suffix}</span>
+                    <span class="time-value">${years}</span>
+                    <span class="time-label">years ${suffix}</span>
+                </div>
+                ` : ''}
+                <div class="time-segment">
+                    <span class="time-value">${years ? days % 365 : days}</span>
+                    <span class="time-label">days ${years ? '' : suffix}</span>
                 </div>
                 <div class="time-segment">
                     <span class="time-value">${String(hours).padStart(2, '0')}</span>
