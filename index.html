@@ -107,11 +107,145 @@
             margin-top: 2rem;
         }
 
+        @media (max-width: 900px) {
+            .container {
+                padding: 1.5rem;
+                max-width: 600px;
+            }
+            
+            h1 {
+                font-size: 48px;
+            }
+
+            .time-value {
+                font-size: 40px;
+                min-width: 70px;
+            }
+        }
+
         @media (max-width: 734px) {
-            h1 { font-size: 40px; }
-            .time-value { font-size: 32px; min-width: 60px; }
-            .message { font-size: 17px; }
-            .timer { gap: 1rem; }
+            h1 { 
+                font-size: 36px; 
+            }
+            
+            .timer {
+                gap: 0.8rem;
+            }
+
+            .time-value { 
+                font-size: 32px; 
+                min-width: 60px; 
+            }
+
+            .time-label {
+                font-size: 12px;
+            }
+
+            .message { 
+                font-size: 16px;
+                padding: 0 1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 1rem;
+            }
+
+            h1 { 
+                font-size: 28px;
+                margin-bottom: 1rem;
+            }
+
+            .timer {
+                gap: 0.5rem;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .time-segment {
+                flex: 0 0 calc(50% - 1rem);
+                margin-bottom: 1rem;
+            }
+
+            .time-value { 
+                font-size: 28px;
+                min-width: 50px;
+            }
+
+            .time-label {
+                font-size: 11px;
+            }
+
+            .message {
+                font-size: 14px;
+                margin-top: 1rem;
+            }
+        }
+
+        /* Handle very small screens */
+        @media (max-width: 320px) {
+            h1 {
+                font-size: 24px;
+            }
+
+            .time-value {
+                font-size: 24px;
+                min-width: 40px;
+            }
+
+            .time-segment {
+                flex: 0 0 calc(50% - 0.5rem);
+                margin-bottom: 0.8rem;
+            }
+        }
+
+        /* Handle landscape orientation on mobile */
+        @media (max-height: 480px) and (orientation: landscape) {
+            .container {
+                padding: 1rem;
+            }
+
+            h1 {
+                font-size: 24px;
+                margin-bottom: 0.5rem;
+            }
+
+            .timer {
+                margin: 1rem 0;
+            }
+
+            .time-value {
+                font-size: 24px;
+            }
+
+            .message {
+                margin-top: 0.5rem;
+            }
+        }
+
+        /* Handle larger screens */
+        @media (min-width: 1200px) {
+            .container {
+                max-width: 1000px;
+            }
+
+            h1 {
+                font-size: 64px;
+            }
+
+            .time-value {
+                font-size: 56px;
+                min-width: 100px;
+            }
+
+            .time-label {
+                font-size: 16px;
+            }
+
+            .message {
+                font-size: 24px;
+            }
         }
     </style>
 </head>
