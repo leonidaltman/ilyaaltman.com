@@ -46,10 +46,30 @@
             position: absolute;
             top: -10px;
             left: 0;
-            width: 100%;
+            width: 200%;
             height: 10px;
             background: var(--water-color);
             filter: blur(1px);
+        }
+
+        .wave1 {
+            opacity: 0.7;
+            animation: wave1 8s linear infinite;
+        }
+
+        .wave2 {
+            opacity: 0.5;
+            animation: wave2 10s linear infinite;
+        }
+
+        @keyframes wave1 {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+
+        @keyframes wave2 {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
         }
 
         .container {
@@ -250,7 +270,8 @@
 </head>
 <body>
     <div class="water-fill" id="water-fill">
-        <div class="wave"></div>
+        <div class="wave wave1"></div>
+        <div class="wave wave2"></div>
     </div>
     
     <div class="container">
