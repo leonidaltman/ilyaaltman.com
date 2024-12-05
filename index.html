@@ -7,6 +7,10 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <meta property="og:title" content="Ilya Altman">
+    <meta property="og:description" content="Growing stronger every second">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://ilyaaltman.com">
     <style>
         :root {
             --primary-color: #0071e3;
@@ -108,6 +112,11 @@
             color: var(--primary-color);
             font-feature-settings: "tnum";
             min-width: 80px;
+            transition: opacity 0.2s ease;
+        }
+
+        .time-value.updating {
+            opacity: 0.5;
         }
 
         .time-label {
@@ -125,6 +134,7 @@
             letter-spacing: .011em;
             color: var(--secondary-color);
             margin-top: 2rem;
+            transition: opacity 0.2s ease-in-out;
         }
 
         @media (max-width: 900px) {
@@ -284,6 +294,57 @@
         const birthDate = new Date('2024-11-14T09:45:00.000Z');
         const eighteenYears = new Date('2042-11-14T09:45:00.000Z');
 
+        function getAgeMessage(days) {
+            if (days < 0) {
+                const daysUntil = Math.abs(days);
+                if (daysUntil > 270) return "A new journey will begin soon...";
+                if (daysUntil > 180) return "Growing stronger each day";
+                if (daysUntil > 90) return "Almost ready to meet the world";
+                if (daysUntil > 30) return "The countdown begins!";
+                return "Any day now...";
+            }
+
+            const milestones = [
+                { days: 7, message: "Welcome to your first week!" },
+                { days: 30, message: "One month of pure joy" },
+                { days: 100, message: "100 days of wonder" },
+                { days: 183, message: "Half a year of adventures" },
+                { days: 365, message: "One year around the sun!" },
+                { days: 730, message: "Two years of endless discoveries" },
+                { days: 1095, message: "Three years of growing wisdom" },
+                { days: 1460, message: "Four years of boundless energy" },
+                { days: 1825, message: "Five years of pure magic" },
+                { days: 2190, message: "Six years and counting" },
+                { days: 2555, message: "Lucky number seven" },
+                { days: 2920, message: "Eight years of excellence" },
+                { days: 3285, message: "Nine years of brilliance" },
+                { days: 3650, message: "A decade of amazing memories" },
+                { days: 4380, message: "Twelve years of determination" },
+                { days: 5110, message: "Fourteen years of inspiration" },
+                { days: 5475, message: "Fifteen years of growth" },
+                { days: 6205, message: "Sweet sixteen!" },
+                { days: 6570, message: "Seventeen years strong" },
+                { days: 6935, message: "Eighteen years of incredible journey" }
+            ];
+
+            const lastMilestone = milestones.filter(m => m.days <= days).pop();
+            if (lastMilestone && lastMilestone.days === days) {
+                return lastMilestone.message;
+            }
+
+            const phases = [
+                { days: 30, message: "Every day brings new wonders" },
+                { days: 365, message: "Learning and discovering" },
+                { days: 1825, message: "Exploring the world with curiosity" },
+                { days: 3650, message: "Creating unforgettable memories" },
+                { days: 5475, message: "Pursuing dreams and passions" },
+                { days: 6935, message: "Building an amazing future" }
+            ];
+
+            const currentPhase = phases.filter(p => p.days <= days).pop();
+            return currentPhase ? currentPhase.message : "Growing stronger every second";
+        }
+
         function updateTimer() {
             const now = new Date();
             const diff = now - birthDate;
@@ -310,6 +371,18 @@
 
                 document.getElementById('timer').innerHTML = getTimeHTML(days, hours, minutes, seconds, 'of life');
             }
+
+            const messageElement = document.querySelector('.message');
+            const newMessage = getAgeMessage(days);
+
+            if (messageElement.dataset.lastMessage !== newMessage) {
+                messageElement.style.opacity = '0';
+                setTimeout(() => {
+                    messageElement.textContent = newMessage;
+                    messageElement.style.opacity = '1';
+                }, 200);
+                messageElement.dataset.lastMessage = newMessage;
+            }
         }
 
         function getTimeHTML(days, hours, minutes, seconds, suffix) {
@@ -333,8 +406,45 @@
             `;
         }
 
+        function updateSeasonalColors() {
+            const month = new Date().getMonth();
+            const root = document.documentElement;
+            
+            // Seasonal colors
+            switch(month) {
+                case 11:
+                case 0:
+                case 1: // Winter
+                    root.style.setProperty('--water-color', 'rgba(0, 149, 255, 0.1)');
+                    break;
+                case 2:
+                case 3:
+                case 4: // Spring
+                    root.style.setProperty('--water-color', 'rgba(64, 196, 255, 0.1)');
+                    break;
+                case 5:
+                case 6:
+                case 7: // Summer
+                    root.style.setProperty('--water-color', 'rgba(0, 183, 255, 0.1)');
+                    break;
+                default: // Fall
+                    root.style.setProperty('--water-color', 'rgba(0, 113, 227, 0.1)');
+            }
+        }
+
         setInterval(updateTimer, 1000);
         updateTimer();
+        updateSeasonalColors();
+
+        document.addEventListener('mousemove', (e) => {
+            const waves = document.querySelectorAll('.wave');
+            const mouseX = e.clientX / window.innerWidth;
+            
+            waves.forEach((wave, index) => {
+                const offset = (mouseX * 10) * (index + 1);
+                wave.style.transform = `translateX(${offset}px)`;
+            });
+        });
     </script>
 </body>
 </html>
