@@ -41,18 +41,26 @@
             bottom: 0;
             left: 0;
             width: 100%;
-            background: var(--water-color);
+            background: linear-gradient(
+                180deg, 
+                var(--water-color) 0%,
+                rgba(0, 113, 227, 0.15) 100%
+            );
             transition: height 0.5s ease-out;
             z-index: 1;
         }
 
         .wave {
             position: absolute;
-            top: -10px;
+            top: -25px;
             left: 0;
             width: 200%;
-            height: 10px;
-            background: var(--water-color);
+            height: 25px;
+            background: radial-gradient(
+                2px at 50% 50%, 
+                rgba(255, 255, 255, 0.15) 0%,
+                transparent 100%
+            ) repeat-x;
             filter: blur(1px);
             transform: translateX(calc(var(--mouse-x, 0) * 1px));
             will-change: transform;
@@ -60,24 +68,40 @@
 
         .wave1 {
             opacity: 0.7;
+            background-size: 50px 25px;
             animation: wave1 12s cubic-bezier(0.36, 0, 0.64, 1) infinite;
         }
 
         .wave2 {
             opacity: 0.5;
+            top: -20px;
+            background-size: 40px 20px;
             animation: wave2 15s cubic-bezier(0.36, 0, 0.64, 1) infinite;
         }
 
+        .wave3 {
+            opacity: 0.3;
+            top: -15px;
+            background-size: 30px 15px;
+            animation: wave3 10s cubic-bezier(0.36, 0, 0.64, 1) infinite;
+        }
+
         @keyframes wave1 {
-            0% { transform: translateX(calc(var(--mouse-x, 0) * 1px)); }
-            50% { transform: translateX(calc(-25% + var(--mouse-x, 0) * 1px)); }
-            100% { transform: translateX(calc(0% + var(--mouse-x, 0) * 1px)); }
+            0% { transform: translateX(calc(var(--mouse-x, 0) * 1px)) translateY(0); }
+            50% { transform: translateX(calc(-25% + var(--mouse-x, 0) * 1px)) translateY(2px); }
+            100% { transform: translateX(calc(0% + var(--mouse-x, 0) * 1px)) translateY(0); }
         }
 
         @keyframes wave2 {
-            0% { transform: translateX(calc(var(--mouse-x, 0) * 1px)); }
-            50% { transform: translateX(calc(-20% + var(--mouse-x, 0) * 1px)); }
-            100% { transform: translateX(calc(0% + var(--mouse-x, 0) * 1px)); }
+            0% { transform: translateX(calc(var(--mouse-x, 0) * 1px)) translateY(0); }
+            50% { transform: translateX(calc(-20% + var(--mouse-x, 0) * 1px)) translateY(-2px); }
+            100% { transform: translateX(calc(0% + var(--mouse-x, 0) * 1px)) translateY(0); }
+        }
+
+        @keyframes wave3 {
+            0% { transform: translateX(calc(var(--mouse-x, 0) * 1px)) translateY(0); }
+            50% { transform: translateX(calc(-30% + var(--mouse-x, 0) * 1px)) translateY(1px); }
+            100% { transform: translateX(calc(0% + var(--mouse-x, 0) * 1px)) translateY(0); }
         }
 
         .container {
@@ -286,6 +310,7 @@
     <div class="water-fill" id="water-fill">
         <div class="wave wave1"></div>
         <div class="wave wave2"></div>
+        <div class="wave wave3"></div>
     </div>
     
     <div class="container">
