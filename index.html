@@ -149,22 +149,22 @@
 
         @media (max-width: 480px) {
             .container {
-                padding: 1rem;
+                padding: 1.5rem;
             }
 
             h1 { 
-                font-size: 28px;
+                font-size: 32px;
                 margin-bottom: 1rem;
             }
 
             .timer {
-                gap: 0.5rem;
-                flex-wrap: wrap;
-                justify-content: center;
+                flex-direction: column;
+                align-items: center;
+                gap: 1rem;
             }
 
             .time-segment {
-                flex: 0 0 calc(50% - 1rem);
+                flex: 0 0 100%;
                 margin-bottom: 1rem;
             }
 
@@ -186,7 +186,7 @@
         /* Handle very small screens */
         @media (max-width: 320px) {
             h1 {
-                font-size: 24px;
+                font-size: 28px;
             }
 
             .time-value {
@@ -195,7 +195,6 @@
             }
 
             .time-segment {
-                flex: 0 0 calc(50% - 0.5rem);
                 margin-bottom: 0.8rem;
             }
         }
