@@ -54,26 +54,30 @@
             height: 10px;
             background: var(--water-color);
             filter: blur(1px);
+            transform: translateX(calc(var(--mouse-x, 0) * 1px));
+            will-change: transform;
         }
 
         .wave1 {
             opacity: 0.7;
-            animation: wave1 8s linear infinite;
+            animation: wave1 12s cubic-bezier(0.36, 0, 0.64, 1) infinite;
         }
 
         .wave2 {
             opacity: 0.5;
-            animation: wave2 10s linear infinite;
+            animation: wave2 15s cubic-bezier(0.36, 0, 0.64, 1) infinite;
         }
 
         @keyframes wave1 {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(-50%); }
+            0% { transform: translateX(calc(var(--mouse-x, 0) * 1px)); }
+            50% { transform: translateX(calc(-25% + var(--mouse-x, 0) * 1px)); }
+            100% { transform: translateX(calc(0% + var(--mouse-x, 0) * 1px)); }
         }
 
         @keyframes wave2 {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(-50%); }
+            0% { transform: translateX(calc(var(--mouse-x, 0) * 1px)); }
+            50% { transform: translateX(calc(-20% + var(--mouse-x, 0) * 1px)); }
+            100% { transform: translateX(calc(0% + var(--mouse-x, 0) * 1px)); }
         }
 
         .container {
@@ -436,15 +440,30 @@
         updateTimer();
         updateSeasonalColors();
 
-        document.addEventListener('mousemove', (e) => {
-            const waves = document.querySelectorAll('.wave');
-            const mouseX = e.clientX / window.innerWidth;
+        let mouseX = 0;
+        let mouseXInterpolated = 0;
+        const interpolationFactor = 0.08; // Adjust for smoother/faster movement
+
+        function updateWaves() {
+            // Smooth interpolation
+            const dx = mouseX - mouseXInterpolated;
+            mouseXInterpolated += dx * interpolationFactor;
             
-            waves.forEach((wave, index) => {
-                const offset = (mouseX * 10) * (index + 1);
-                wave.style.transform = `translateX(${offset}px)`;
-            });
+            // Update CSS variable
+            document.documentElement.style.setProperty('--mouse-x', mouseXInterpolated);
+            
+            // Continue animation loop
+            requestAnimationFrame(updateWaves);
+        }
+
+        document.addEventListener('mousemove', (e) => {
+            // Calculate mouse position relative to window center
+            const centerX = window.innerWidth / 2;
+            mouseX = (e.clientX - centerX) / 10; // Adjust divisor to control movement intensity
         });
+
+        // Start the animation loop
+        updateWaves();
     </script>
 </body>
 </html>
