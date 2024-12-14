@@ -424,6 +424,9 @@
         }
 
         function getTimeHTML(days, hours, minutes, seconds, suffix, years) {
+            const months = Math.floor(days / 30);
+            const remainingDays = days % 30;
+            
             return `
                 ${years ? `
                 <div class="time-segment">
@@ -431,9 +434,15 @@
                     <span class="time-label">years ${suffix}</span>
                 </div>
                 ` : ''}
+                ${months > 0 ? `
                 <div class="time-segment">
-                    <span class="time-value">${years ? days % 365 : days}</span>
-                    <span class="time-label">days ${years ? '' : suffix}</span>
+                    <span class="time-value">${months}</span>
+                    <span class="time-label">month${months > 1 ? 's' : ''} ${years ? '' : suffix}</span>
+                </div>
+                ` : ''}
+                <div class="time-segment">
+                    <span class="time-value">${years ? remainingDays : (months > 0 ? remainingDays : days)}</span>
+                    <span class="time-label">days ${(!years && months === 0) ? suffix : ''}</span>
                 </div>
                 <div class="time-segment">
                     <span class="time-value">${String(hours).padStart(2, '0')}</span>
