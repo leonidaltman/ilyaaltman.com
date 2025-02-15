@@ -424,26 +424,79 @@
         }
 
         function getTimeHTML(days, hours, minutes, seconds, suffix, years) {
-            const months = Math.floor(days / 30);
-            const remainingDays = days % 30;
+            const now = new Date();
             
+            // Handle case when birth hasn't happened yet
+            if (now < birthDate) {
+                return `
+                    <div class="time-segment">
+                        <span class="time-value">${days}</span>
+                        <span class="time-label">days ${suffix}</span>
+                    </div>
+                    <div class="time-segment">
+                        <span class="time-value">${String(hours).padStart(2, '0')}</span>
+                        <span class="time-label">hours</span>
+                    </div>
+                    <div class="time-segment">
+                        <span class="time-value">${String(minutes).padStart(2, '0')}</span>
+                        <span class="time-label">minutes</span>
+                    </div>
+                    <div class="time-segment">
+                        <span class="time-value">${String(seconds).padStart(2, '0')}</span>
+                        <span class="time-label">seconds</span>
+                    </div>
+                `;
+            }
+
+            // Function to calculate months between dates considering time of day
+            function getMonthsDiff(d1, d2) {
+                let months = (d2.getFullYear() - d1.getFullYear()) * 12 + (d2.getMonth() - d1.getMonth());
+                
+                // Get the day difference considering time of day
+                const d1Day = d1.getDate() + d1.getHours()/24 + d1.getMinutes()/(24*60) + d1.getSeconds()/(24*60*60);
+                const d2Day = d2.getDate() + d2.getHours()/24 + d2.getMinutes()/(24*60) + d2.getSeconds()/(24*60*60);
+                
+                if (d2Day < d1Day) {
+                    months--;
+                }
+                
+                return months;
+            }
+
+            // Calculate total months lived
+            const totalMonths = getMonthsDiff(birthDate, now);
+            
+            // Calculate years and remaining months
+            const yearsLived = Math.floor(totalMonths / 12);
+            const monthsAfterYears = totalMonths % 12;
+            
+            // Calculate remaining days
+            const lastMonthDate = new Date(now.getFullYear(), now.getMonth(), birthDate.getDate(), 
+                                         birthDate.getHours(), birthDate.getMinutes(), birthDate.getSeconds());
+            if (lastMonthDate > now) {
+                lastMonthDate.setMonth(lastMonthDate.getMonth() - 1);
+            }
+            const remainingDays = Math.floor((now - lastMonthDate) / (1000 * 60 * 60 * 24));
+
             return `
-                ${years ? `
+                ${yearsLived > 0 ? `
                 <div class="time-segment">
-                    <span class="time-value">${years}</span>
-                    <span class="time-label">years ${suffix}</span>
+                    <span class="time-value">${yearsLived}</span>
+                    <span class="time-label">year${yearsLived > 1 ? 's' : ''} ${suffix}</span>
                 </div>
                 ` : ''}
-                ${months > 0 ? `
+                ${monthsAfterYears > 0 ? `
                 <div class="time-segment">
-                    <span class="time-value">${months}</span>
-                    <span class="time-label">month${months > 1 ? 's' : ''} ${years ? '' : suffix}</span>
+                    <span class="time-value">${monthsAfterYears}</span>
+                    <span class="time-label">month${monthsAfterYears > 1 ? 's' : ''} ${yearsLived ? '' : suffix}</span>
                 </div>
                 ` : ''}
+                ${remainingDays > 0 ? `
                 <div class="time-segment">
-                    <span class="time-value">${years ? remainingDays : (months > 0 ? remainingDays : days)}</span>
-                    <span class="time-label">days ${(!years && months === 0) ? suffix : ''}</span>
+                    <span class="time-value">${remainingDays}</span>
+                    <span class="time-label">day${remainingDays > 1 ? 's' : ''} ${(!yearsLived && !monthsAfterYears) ? suffix : ''}</span>
                 </div>
+                ` : ''}
                 <div class="time-segment">
                     <span class="time-value">${String(hours).padStart(2, '0')}</span>
                     <span class="time-label">hours</span>
