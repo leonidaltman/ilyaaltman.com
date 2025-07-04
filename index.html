@@ -80,148 +80,51 @@
             overflow: hidden;
         }
 
-        /* Weather animation layers */
-        .weather-layer {
+        /* Modern 2025 Weather Canvas System */
+        #weather-canvas {
             position: fixed;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
+            width: 100vw;
+            height: 100vh;
             pointer-events: none;
             z-index: 1;
             opacity: 0;
-            transition: opacity 2s ease-in-out;
+            transition: opacity 1s ease-in-out;
         }
 
-        .weather-layer.active {
+        #weather-canvas.active {
             opacity: 1;
         }
 
-        /* Rain effects */
-        .rain-layer {
-            background-image: 
-                linear-gradient(180deg, transparent 0%, rgba(135, 206, 235, 0.1) 100%),
-                linear-gradient(85deg, transparent 40%, rgba(255, 255, 255, 0.3) 41%, rgba(255, 255, 255, 0.3) 43%, transparent 44%),
-                linear-gradient(87deg, transparent 40%, rgba(255, 255, 255, 0.2) 41%, rgba(255, 255, 255, 0.2) 43%, transparent 44%),
-                linear-gradient(89deg, transparent 40%, rgba(255, 255, 255, 0.1) 41%, rgba(255, 255, 255, 0.1) 43%, transparent 44%);
-            background-size: 100% 100%, 20px 100px, 30px 120px, 25px 110px;
-            animation: rain-fall 0.8s linear infinite;
+        /* Lightning flash overlay */
+        .lightning-flash {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: radial-gradient(ellipse at var(--lightning-x, 50%) var(--lightning-y, 30%), 
+                        rgba(255, 255, 255, 0.95) 0%, 
+                        rgba(135, 206, 235, 0.7) 20%, 
+                        transparent 50%);
+            pointer-events: none;
+            z-index: 2;
+            opacity: 0;
+            mix-blend-mode: screen;
         }
 
-        .heavy-rain-layer {
-            background-image: 
-                linear-gradient(180deg, rgba(75, 85, 99, 0.2) 0%, rgba(107, 114, 128, 0.3) 100%),
-                linear-gradient(85deg, transparent 35%, rgba(255, 255, 255, 0.4) 36%, rgba(255, 255, 255, 0.4) 39%, transparent 40%),
-                linear-gradient(87deg, transparent 35%, rgba(255, 255, 255, 0.3) 36%, rgba(255, 255, 255, 0.3) 39%, transparent 40%),
-                linear-gradient(89deg, transparent 35%, rgba(255, 255, 255, 0.2) 36%, rgba(255, 255, 255, 0.2) 39%, transparent 40%);
-            background-size: 100% 100%, 15px 80px, 20px 90px, 18px 85px;
-            animation: heavy-rain-fall 0.5s linear infinite;
+        .lightning-flash.active {
+            animation: lightning-modern 0.15s ease-out;
         }
 
-        /* Snow effects */
-        .snow-layer {
-            background-image: 
-                radial-gradient(circle at 10% 20%, rgba(255, 255, 255, 0.8) 1px, transparent 1px),
-                radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.6) 1px, transparent 1px),
-                radial-gradient(circle at 40% 40%, rgba(255, 255, 255, 0.7) 1px, transparent 1px),
-                radial-gradient(circle at 90% 10%, rgba(255, 255, 255, 0.5) 1px, transparent 1px),
-                radial-gradient(circle at 30% 70%, rgba(255, 255, 255, 0.9) 1px, transparent 1px);
-            background-size: 100px 100px, 120px 120px, 80px 80px, 140px 140px, 90px 90px;
-            animation: snow-fall 8s linear infinite;
-        }
-
-        /* Cloud effects */
-        .cloud-layer {
-            background-image: 
-                radial-gradient(ellipse at 30% 50%, rgba(255, 255, 255, 0.3) 30%, transparent 70%),
-                radial-gradient(ellipse at 70% 30%, rgba(255, 255, 255, 0.2) 25%, transparent 65%),
-                radial-gradient(ellipse at 50% 80%, rgba(255, 255, 255, 0.25) 35%, transparent 75%);
-            background-size: 300px 150px, 250px 120px, 320px 160px;
-            animation: clouds-drift 60s linear infinite;
-        }
-
-        /* Fog effects */
-        .fog-layer {
-            background: 
-                linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.1) 50%, transparent 70%),
-                linear-gradient(-45deg, transparent 40%, rgba(240, 248, 255, 0.15) 60%, transparent 80%);
-            background-size: 200px 200px, 180px 180px;
-            animation: fog-drift 30s ease-in-out infinite;
-        }
-
-        /* Lightning flash */
-        .lightning-layer {
-            background: radial-gradient(circle at center, rgba(255, 255, 255, 0.9) 0%, transparent 50%);
-            animation: lightning-flash 0.2s ease-out;
-        }
-
-        /* Wind effects */
-        .wind-layer {
-            background-image: 
-                linear-gradient(75deg, transparent 0%, rgba(255, 255, 255, 0.05) 30%, transparent 60%),
-                linear-gradient(105deg, transparent 20%, rgba(255, 255, 255, 0.03) 50%, transparent 80%);
-            background-size: 400px 200px, 300px 150px;
-            animation: wind-blow 4s ease-in-out infinite;
-        }
-
-        /* Enhanced cloud effects with varying speeds */
-        .cloud-layer.windy {
-            animation: clouds-drift-fast 30s linear infinite;
-        }
-
-        /* Stormy atmosphere effects */
-        .storm-atmosphere {
-            background: 
-                radial-gradient(ellipse at 20% 10%, rgba(75, 85, 99, 0.1) 0%, transparent 50%),
-                radial-gradient(ellipse at 80% 90%, rgba(55, 65, 81, 0.15) 0%, transparent 60%),
-                linear-gradient(180deg, rgba(31, 41, 55, 0.05) 0%, transparent 100%);
-            animation: storm-shift 8s ease-in-out infinite;
-        }
-
-        /* Animation keyframes */
-        @keyframes rain-fall {
-            0% { background-position: 0% 0%, 0% 0%, 0% 0%, 0% 0%; }
-            100% { background-position: 0% 100%, 5% 100%, -3% 100%, 2% 100%; }
-        }
-
-        @keyframes heavy-rain-fall {
-            0% { background-position: 0% 0%, 0% 0%, 0% 0%, 0% 0%; }
-            100% { background-position: 0% 100%, 8% 100%, -5% 100%, 3% 100%; }
-        }
-
-        @keyframes snow-fall {
-            0% { background-position: 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%; }
-            100% { background-position: 10% 100%, -20% 100%, 15% 100%, -10% 100%, 25% 100%; }
-        }
-
-        @keyframes clouds-drift {
-            0% { background-position: -300px 0%, -250px 0%, -320px 0%; }
-            100% { background-position: 100vw 0%, calc(100vw + 250px) 0%, calc(100vw + 320px) 0%; }
-        }
-
-        @keyframes fog-drift {
-            0%, 100% { background-position: 0% 0%, 100% 100%; opacity: 0.3; }
-            50% { background-position: 100% 50%, 0% 50%; opacity: 0.6; }
-        }
-
-        @keyframes lightning-flash {
-            0%, 90%, 100% { opacity: 0; }
-            5%, 85% { opacity: 1; }
-        }
-
-        @keyframes wind-blow {
-            0%, 100% { background-position: 0% 0%, 0% 0%; opacity: 0.3; }
-            50% { background-position: 100% 100%, -50% 50%; opacity: 0.8; }
-        }
-
-        @keyframes clouds-drift-fast {
-            0% { background-position: -300px 0%, -250px 0%, -320px 0%; }
-            100% { background-position: calc(100vw + 300px) 0%, calc(100vw + 500px) 0%, calc(100vw + 640px) 0%; }
-        }
-
-        @keyframes storm-shift {
-            0%, 100% { opacity: 0.4; transform: scale(1); }
-            50% { opacity: 0.7; transform: scale(1.05); }
+        @keyframes lightning-modern {
+            0% { opacity: 0; }
+            10% { opacity: 1; }
+            20% { opacity: 0.3; }
+            30% { opacity: 1; }
+            40% { opacity: 0; }
+            100% { opacity: 0; }
         }
 
         /* Sky gradient presets for different conditions */
@@ -568,14 +471,9 @@
 </head>
 <body>
     <!-- Dynamic weather animation layers -->
-    <div id="rain-layer" class="weather-layer rain-layer"></div>
-    <div id="heavy-rain-layer" class="weather-layer heavy-rain-layer"></div>
-    <div id="snow-layer" class="weather-layer snow-layer"></div>
-    <div id="cloud-layer" class="weather-layer cloud-layer"></div>
-    <div id="fog-layer" class="weather-layer fog-layer"></div>
-    <div id="wind-layer" class="weather-layer wind-layer"></div>
-    <div id="storm-atmosphere" class="weather-layer storm-atmosphere"></div>
-    <div id="lightning-layer" class="weather-layer lightning-layer"></div>
+    <!-- Modern 2025 Weather System -->
+    <canvas id="weather-canvas"></canvas>
+    <div class="lightning-flash" id="lightning-flash"></div>
 
     <main class="container">
         <header>
@@ -644,8 +542,8 @@
             currentWeather: null,
             lastWeatherUpdate: 0,
             currentSkyClass: '',
-            activeWeatherLayers: new Set(),
-            lastWeatherCondition: ''
+            lastWeatherCondition: '',
+            weatherSystem: null
         };
 
         // Initialize dates with error handling
@@ -693,9 +591,14 @@
                 state.isHidden = true;
                 if (state.timerInterval) clearInterval(state.timerInterval);
                 if (state.weatherInterval) clearInterval(state.weatherInterval);
-                stopLightningEffects();
+                if (state.weatherSystem) {
+                    state.weatherSystem.stop();
+                }
             } else {
                 state.isHidden = false;
+                if (state.weatherSystem) {
+                    state.weatherSystem.start();
+                }
                 startTimers();
             }
         }
@@ -770,79 +673,323 @@
             return 'clear'; // fallback
         }
 
-        // Weather animation management
-        function activateWeatherLayer(layerId) {
-            if (state.activeWeatherLayers.has(layerId)) return;
-            
-            const layer = document.getElementById(layerId);
-            if (layer) {
-                layer.classList.add('active');
-                state.activeWeatherLayers.add(layerId);
-                console.log(`Activated weather layer: ${layerId}`);
-            }
-        }
-
-        function deactivateWeatherLayer(layerId) {
-            if (!state.activeWeatherLayers.has(layerId)) return;
-            
-            const layer = document.getElementById(layerId);
-            if (layer) {
-                layer.classList.remove('active');
-                state.activeWeatherLayers.delete(layerId);
-                console.log(`Deactivated weather layer: ${layerId}`);
-            }
-        }
-
-        function clearAllWeatherLayers() {
-            const layers = ['rain-layer', 'heavy-rain-layer', 'snow-layer', 'cloud-layer', 'fog-layer', 'wind-layer', 'storm-atmosphere', 'lightning-layer'];
-            layers.forEach(layerId => deactivateWeatherLayer(layerId));
-            
-            // Remove windy class from clouds
-            const cloudLayer = document.getElementById('cloud-layer');
-            if (cloudLayer) {
-                cloudLayer.classList.remove('windy');
-            }
-        }
-
-        function triggerLightning() {
-            const lightningLayer = document.getElementById('lightning-layer');
-            if (lightningLayer) {
-                // Remove active class to reset animation
-                lightningLayer.classList.remove('active');
+        // Modern 2025 Weather System - Canvas-based particle physics
+        class WeatherSystem {
+            constructor() {
+                this.canvas = document.getElementById('weather-canvas');
+                this.ctx = this.canvas ? this.canvas.getContext('2d') : null;
+                this.particles = [];
+                this.cloudParticles = [];
+                this.windParticles = [];
+                this.animationId = null;
+                this.currentWeather = 'clear';
+                this.lightningFlash = document.getElementById('lightning-flash');
+                this.lightningInterval = null;
                 
-                // Trigger reflow to restart animation
-                lightningLayer.offsetHeight;
-                
-                // Add active class to start lightning animation
-                lightningLayer.classList.add('active');
-                
-                // Remove after animation completes
-                setTimeout(() => {
-                    lightningLayer.classList.remove('active');
-                }, 200);
-            }
-        }
-
-        function startLightningEffects() {
-            // Random lightning flashes during thunderstorms
-            if (state.lightningInterval) clearInterval(state.lightningInterval);
-            
-            state.lightningInterval = setInterval(() => {
-                if (Math.random() < 0.3) { // 30% chance every interval
-                    triggerLightning();
-                    
-                    // Sometimes double flash
-                    if (Math.random() < 0.4) {
-                        setTimeout(triggerLightning, 150);
-                    }
+                if (this.canvas && this.ctx) {
+                    this.setupCanvas();
+                    this.start();
                 }
-            }, 3000 + Math.random() * 7000); // 3-10 second intervals
-        }
+            }
 
-        function stopLightningEffects() {
-            if (state.lightningInterval) {
-                clearInterval(state.lightningInterval);
-                state.lightningInterval = null;
+            setupCanvas() {
+                this.resizeCanvas();
+                window.addEventListener('resize', () => this.resizeCanvas());
+                
+                // Enable hardware acceleration
+                this.ctx.imageSmoothingEnabled = true;
+                this.ctx.imageSmoothingQuality = 'high';
+            }
+
+            resizeCanvas() {
+                if (!this.canvas) return;
+                this.canvas.width = window.innerWidth;
+                this.canvas.height = window.innerHeight;
+            }
+
+            start() {
+                if (!this.animationId) {
+                    this.animate();
+                }
+            }
+
+            stop() {
+                if (this.animationId) {
+                    cancelAnimationFrame(this.animationId);
+                    this.animationId = null;
+                }
+                this.stopLightning();
+            }
+
+            changeWeather(weatherType) {
+                if (this.currentWeather === weatherType) return;
+                
+                this.currentWeather = weatherType;
+                this.stopLightning();
+                this.clearParticles();
+                
+                // Show canvas for weather effects
+                if (weatherType !== 'clear') {
+                    this.canvas.classList.add('active');
+                } else {
+                    this.canvas.classList.remove('active');
+                }
+                
+                console.log(`Weather changed to: ${weatherType}`);
+                
+                switch (weatherType) {
+                    case 'light-rain':
+                        this.createRain(150, 'light');
+                        this.createClouds(8);
+                        break;
+                    case 'heavy-rain':
+                        this.createRain(400, 'heavy');
+                        this.createClouds(15);
+                        this.createWind(20);
+                        break;
+                    case 'thunderstorm':
+                        this.createRain(500, 'heavy');
+                        this.createClouds(20);
+                        this.createWind(35);
+                        this.startLightning();
+                        break;
+                    case 'snow':
+                        this.createSnow(200);
+                        this.createClouds(12);
+                        break;
+                    case 'cloudy':
+                        this.createClouds(10);
+                        this.createWind(15);
+                        break;
+                    case 'fog':
+                        this.createFog(100);
+                        break;
+                    case 'clear':
+                    default:
+                        // Sometimes add gentle wind
+                        if (Math.random() < 0.3) {
+                            this.createWind(8);
+                        }
+                        break;
+                }
+            }
+
+            clearParticles() {
+                this.particles = [];
+                this.cloudParticles = [];
+                this.windParticles = [];
+            }
+
+            createRain(count, intensity) {
+                for (let i = 0; i < count; i++) {
+                    this.particles.push({
+                        type: 'rain',
+                        x: Math.random() * (this.canvas.width + 200) - 100,
+                        y: Math.random() * this.canvas.height - this.canvas.height,
+                        speed: intensity === 'heavy' ? 8 + Math.random() * 4 : 5 + Math.random() * 3,
+                        length: intensity === 'heavy' ? 15 + Math.random() * 10 : 8 + Math.random() * 6,
+                        opacity: intensity === 'heavy' ? 0.6 + Math.random() * 0.4 : 0.3 + Math.random() * 0.4,
+                        angle: -0.2 + Math.random() * 0.4
+                    });
+                }
+            }
+
+            createSnow(count) {
+                for (let i = 0; i < count; i++) {
+                    this.particles.push({
+                        type: 'snow',
+                        x: Math.random() * this.canvas.width,
+                        y: Math.random() * this.canvas.height - this.canvas.height,
+                        speed: 1 + Math.random() * 2,
+                        size: 2 + Math.random() * 4,
+                        opacity: 0.6 + Math.random() * 0.4,
+                        drift: Math.random() * 0.5 - 0.25,
+                        rotation: Math.random() * Math.PI * 2,
+                        rotationSpeed: (Math.random() - 0.5) * 0.02
+                    });
+                }
+            }
+
+            createClouds(count) {
+                for (let i = 0; i < count; i++) {
+                    this.cloudParticles.push({
+                        x: Math.random() * (this.canvas.width + 400) - 200,
+                        y: Math.random() * this.canvas.height * 0.6,
+                        size: 60 + Math.random() * 120,
+                        speed: 0.2 + Math.random() * 0.5,
+                        opacity: 0.1 + Math.random() * 0.3,
+                        blur: 20 + Math.random() * 40
+                    });
+                }
+            }
+
+            createWind(count) {
+                for (let i = 0; i < count; i++) {
+                    this.windParticles.push({
+                        x: -50,
+                        y: Math.random() * this.canvas.height,
+                        speed: 2 + Math.random() * 3,
+                        length: 30 + Math.random() * 50,
+                        opacity: 0.1 + Math.random() * 0.2,
+                        wave: Math.random() * Math.PI * 2,
+                        waveSpeed: 0.02 + Math.random() * 0.03
+                    });
+                }
+            }
+
+            createFog(count) {
+                for (let i = 0; i < count; i++) {
+                    this.cloudParticles.push({
+                        x: Math.random() * this.canvas.width,
+                        y: this.canvas.height * 0.3 + Math.random() * this.canvas.height * 0.7,
+                        size: 100 + Math.random() * 200,
+                        speed: 0.1 + Math.random() * 0.3,
+                        opacity: 0.05 + Math.random() * 0.15,
+                        blur: 50 + Math.random() * 100
+                    });
+                }
+            }
+
+            startLightning() {
+                this.lightningInterval = setInterval(() => {
+                    if (Math.random() < 0.25) {
+                        this.triggerLightning();
+                        
+                        // Double flash
+                        if (Math.random() < 0.4) {
+                            setTimeout(() => this.triggerLightning(), 100 + Math.random() * 100);
+                        }
+                    }
+                }, 4000 + Math.random() * 8000);
+            }
+
+            stopLightning() {
+                if (this.lightningInterval) {
+                    clearInterval(this.lightningInterval);
+                    this.lightningInterval = null;
+                }
+            }
+
+            triggerLightning() {
+                if (!this.lightningFlash) return;
+                
+                // Random lightning position
+                const x = 30 + Math.random() * 40;
+                const y = 10 + Math.random() * 20;
+                
+                this.lightningFlash.style.setProperty('--lightning-x', `${x}%`);
+                this.lightningFlash.style.setProperty('--lightning-y', `${y}%`);
+                
+                this.lightningFlash.classList.remove('active');
+                void this.lightningFlash.offsetWidth; // Force reflow
+                this.lightningFlash.classList.add('active');
+                
+                setTimeout(() => {
+                    this.lightningFlash.classList.remove('active');
+                }, 150);
+            }
+
+            animate() {
+                if (!this.ctx || !this.canvas) return;
+                
+                // Respect reduced motion preferences
+                if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                    return;
+                }
+                
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                
+                // Draw clouds with soft blur
+                this.ctx.save();
+                this.cloudParticles.forEach(cloud => {
+                    this.ctx.globalAlpha = cloud.opacity;
+                    this.ctx.filter = `blur(${cloud.blur}px)`;
+                    this.ctx.fillStyle = '#ffffff';
+                    this.ctx.beginPath();
+                    this.ctx.arc(cloud.x, cloud.y, cloud.size, 0, Math.PI * 2);
+                    this.ctx.fill();
+                    
+                    cloud.x += cloud.speed;
+                    if (cloud.x > this.canvas.width + 200) {
+                        cloud.x = -200;
+                        cloud.y = Math.random() * this.canvas.height * 0.6;
+                    }
+                });
+                this.ctx.restore();
+
+                // Draw wind particles
+                this.windParticles.forEach(wind => {
+                    this.ctx.globalAlpha = wind.opacity;
+                    this.ctx.strokeStyle = '#ffffff';
+                    this.ctx.lineWidth = 1;
+                    this.ctx.lineCap = 'round';
+                    
+                    const waveOffset = Math.sin(wind.wave) * 20;
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(wind.x, wind.y + waveOffset);
+                    this.ctx.lineTo(wind.x + wind.length, wind.y + waveOffset);
+                    this.ctx.stroke();
+                    
+                    wind.x += wind.speed;
+                    wind.wave += wind.waveSpeed;
+                    
+                    if (wind.x > this.canvas.width + 100) {
+                        wind.x = -50;
+                        wind.y = Math.random() * this.canvas.height;
+                        wind.wave = Math.random() * Math.PI * 2;
+                    }
+                });
+
+                // Draw rain and snow particles
+                this.particles.forEach(particle => {
+                    this.ctx.globalAlpha = particle.opacity;
+                    
+                    if (particle.type === 'rain') {
+                        this.ctx.strokeStyle = '#87CEEB';
+                        this.ctx.lineWidth = 1;
+                        this.ctx.lineCap = 'round';
+                        
+                        this.ctx.beginPath();
+                        this.ctx.moveTo(particle.x, particle.y);
+                        this.ctx.lineTo(
+                            particle.x + particle.angle * particle.length, 
+                            particle.y + particle.length
+                        );
+                        this.ctx.stroke();
+                        
+                        particle.y += particle.speed;
+                        particle.x += particle.angle * 2;
+                        
+                    } else if (particle.type === 'snow') {
+                        this.ctx.fillStyle = '#ffffff';
+                        this.ctx.save();
+                        this.ctx.translate(particle.x, particle.y);
+                        this.ctx.rotate(particle.rotation);
+                        this.ctx.fillRect(-particle.size/2, -particle.size/2, particle.size, particle.size);
+                        this.ctx.restore();
+                        
+                        particle.y += particle.speed;
+                        particle.x += particle.drift * Math.sin(particle.y * 0.01);
+                        particle.rotation += particle.rotationSpeed;
+                    }
+                    
+                    // Reset particles when they fall off screen
+                    if (particle.y > this.canvas.height + 50) {
+                        particle.y = -50;
+                        particle.x = Math.random() * (this.canvas.width + 200) - 100;
+                    }
+                });
+                
+                this.ctx.globalAlpha = 1;
+                this.animationId = requestAnimationFrame(() => this.animate());
+            }
+
+            destroy() {
+                this.stop();
+                this.clearParticles();
+                if (this.canvas) {
+                    this.canvas.classList.remove('active');
+                }
             }
         }
 
@@ -868,71 +1015,9 @@
                 }
                 
                 // Update weather animations when conditions change
-                if (state.lastWeatherCondition !== weatherCondition) {
-                    clearAllWeatherLayers();
-                    stopLightningEffects();
-                    
-                    // Activate appropriate weather animations
-                    switch (weatherCondition) {
-                        case 'cloudy':
-                            activateWeatherLayer('cloud-layer');
-                            // Add wind effects during cloudy conditions
-                            if (Math.random() < 0.6) {
-                                activateWeatherLayer('wind-layer');
-                                const cloudLayer = document.getElementById('cloud-layer');
-                                if (cloudLayer) cloudLayer.classList.add('windy');
-                            }
-                            break;
-                            
-                        case 'light-rain':
-                            activateWeatherLayer('rain-layer');
-                            activateWeatherLayer('cloud-layer');
-                            activateWeatherLayer('wind-layer');
-                            break;
-                            
-                        case 'heavy-rain':
-                            activateWeatherLayer('heavy-rain-layer');
-                            activateWeatherLayer('cloud-layer');
-                            activateWeatherLayer('wind-layer');
-                            activateWeatherLayer('storm-atmosphere');
-                            const cloudLayer = document.getElementById('cloud-layer');
-                            if (cloudLayer) cloudLayer.classList.add('windy');
-                            break;
-                            
-                        case 'thunderstorm':
-                            activateWeatherLayer('heavy-rain-layer');
-                            activateWeatherLayer('cloud-layer');
-                            activateWeatherLayer('wind-layer');
-                            activateWeatherLayer('storm-atmosphere');
-                            const stormCloudLayer = document.getElementById('cloud-layer');
-                            if (stormCloudLayer) stormCloudLayer.classList.add('windy');
-                            startLightningEffects();
-                            break;
-                            
-                        case 'snow':
-                            activateWeatherLayer('snow-layer');
-                            activateWeatherLayer('cloud-layer');
-                            // Light wind effects during snow
-                            if (Math.random() < 0.4) {
-                                activateWeatherLayer('wind-layer');
-                            }
-                            break;
-                            
-                        case 'fog':
-                            activateWeatherLayer('fog-layer');
-                            break;
-                            
-                        case 'clear':
-                        default:
-                            // Clear conditions - sometimes light wind
-                            if (Math.random() < 0.2) {
-                                activateWeatherLayer('wind-layer');
-                            }
-                            break;
-                    }
-                    
+                if (state.lastWeatherCondition !== weatherCondition && state.weatherSystem) {
+                    state.weatherSystem.changeWeather(weatherCondition);
                     state.lastWeatherCondition = weatherCondition;
-                    console.log(`Weather animations updated: ${weatherCondition}`);
                 }
                 
                 // Only update sky gradient if the sky class has changed
@@ -1293,14 +1378,19 @@
         function cleanup() {
             if (state.timerInterval) clearInterval(state.timerInterval);
             if (state.weatherInterval) clearInterval(state.weatherInterval);
-            stopLightningEffects();
-            clearAllWeatherLayers();
+            if (state.weatherSystem) {
+                state.weatherSystem.destroy();
+                state.weatherSystem = null;
+            }
         }
 
         // Initialize the application
         function init() {
             try {
                 if (!initializeDates()) return;
+                
+                // Initialize modern weather system
+                state.weatherSystem = new WeatherSystem();
                 
                 // Add event listeners
                 document.addEventListener('visibilitychange', handleVisibilityChange);
