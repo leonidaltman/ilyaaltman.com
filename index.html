@@ -50,6 +50,12 @@
             --secondary-color: #86868b;
             --background-color: #fbfbfd;
             --text-color: #1d1d1f;
+            
+            /* Sky gradient variables */
+            --sky-color-1: #87CEEB;
+            --sky-color-2: #98D8E8;
+            --sky-color-3: #B0E0E6;
+            --sky-transition-duration: 30s;
         }
 
         body {
@@ -61,9 +67,98 @@
             justify-content: center;
             align-items: center;
             font-family: -apple-system, 'Inter', sans-serif;
-            background-color: var(--background-color);
+            background: linear-gradient(
+                180deg,
+                var(--sky-color-1) 0%,
+                var(--sky-color-2) 50%,
+                var(--sky-color-3) 100%
+            );
             color: var(--text-color);
             -webkit-font-smoothing: antialiased;
+            transition: background var(--sky-transition-duration) ease-in-out;
+        }
+
+        /* Sky gradient presets for different conditions */
+        .sky-dawn-clear {
+            --sky-color-1: #FFB6C1;
+            --sky-color-2: #FFA07A;
+            --sky-color-3: #FFE4B5;
+        }
+
+        .sky-morning-clear {
+            --sky-color-1: #87CEEB;
+            --sky-color-2: #98D8E8;
+            --sky-color-3: #B0E0E6;
+        }
+
+        .sky-noon-clear {
+            --sky-color-1: #4A90E2;
+            --sky-color-2: #67B7FF;
+            --sky-color-3: #87CEEB;
+        }
+
+        .sky-afternoon-clear {
+            --sky-color-1: #FFB347;
+            --sky-color-2: #FFDAB9;
+            --sky-color-3: #FFF8DC;
+        }
+
+        .sky-sunset-clear {
+            --sky-color-1: #FF6B6B;
+            --sky-color-2: #FF8E53;
+            --sky-color-3: #FF6B9D;
+        }
+
+        .sky-dusk-clear {
+            --sky-color-1: #483D8B;
+            --sky-color-2: #6A5ACD;
+            --sky-color-3: #8A2BE2;
+        }
+
+        .sky-night-clear {
+            --sky-color-1: #191970;
+            --sky-color-2: #2F2F4F;
+            --sky-color-3: #483D8B;
+        }
+
+        /* Cloudy variants */
+        .sky-cloudy {
+            --sky-color-1: #B0C4DE;
+            --sky-color-2: #D3D3D3;
+            --sky-color-3: #E6E6FA;
+        }
+
+        .sky-overcast {
+            --sky-color-1: #708090;
+            --sky-color-2: #A9A9A9;
+            --sky-color-3: #C0C0C0;
+        }
+
+        /* Rainy variants */
+        .sky-light-rain {
+            --sky-color-1: #778899;
+            --sky-color-2: #B0C4DE;
+            --sky-color-3: #D3D3D3;
+        }
+
+        .sky-heavy-rain {
+            --sky-color-1: #2F4F4F;
+            --sky-color-2: #696969;
+            --sky-color-3: #808080;
+        }
+
+        /* Snowy variants */
+        .sky-snow {
+            --sky-color-1: #F0F8FF;
+            --sky-color-2: #F5F5F5;
+            --sky-color-3: #FFFFFF;
+        }
+
+        /* Foggy variants */
+        .sky-fog {
+            --sky-color-1: #D3D3D3;
+            --sky-color-2: #DCDCDC;
+            --sky-color-3: #F5F5F5;
         }
 
         .container {
@@ -72,6 +167,10 @@
             max-width: 800px;
             position: relative;
             z-index: 2;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
         }
 
         h1 {
@@ -158,10 +257,14 @@
             :root {
                 --primary-color: #0000ff;
                 --secondary-color: #000000;
-                --background-color: #ffffff;
                 --text-color: #000000;
+                --sky-color-1: #ffffff;
+                --sky-color-2: #ffffff;
+                --sky-color-3: #ffffff;
             }
         }
+
+
 
         /* Focus management */
         .timer:focus-within {
@@ -356,7 +459,16 @@
             MILLISECONDS_IN_HOUR: 1000 * 60 * 60,
             MILLISECONDS_IN_DAY: 1000 * 60 * 60 * 24,
             UPDATE_INTERVAL: 1000,
-            MESSAGE_TRANSITION_DELAY: 200
+            MESSAGE_TRANSITION_DELAY: 200,
+            
+            // Weather and location constants
+            HAIFA_LAT: 32.7940,
+            HAIFA_LON: 34.9896,
+            HAIFA_TIMEZONE: 'Asia/Jerusalem',
+            WEATHER_UPDATE_INTERVAL: 10 * 60 * 1000, // 10 minutes
+            
+            // Free weather service (no API key required)
+            WEATHER_API_URL: 'https://api.open-meteo.com/v1/forecast'
         };
 
         // Global state
@@ -364,9 +476,13 @@
             birthDate: null,
             eighteenYears: null,
             timerInterval: null,
+            weatherInterval: null,
             isHidden: false,
             lastMessage: '',
-            hasError: false
+            hasError: false,
+            currentWeather: null,
+            lastWeatherUpdate: 0,
+            currentSkyClass: ''
         };
 
         // Initialize dates with error handling
@@ -413,11 +529,119 @@
             if (document.hidden) {
                 state.isHidden = true;
                 if (state.timerInterval) clearInterval(state.timerInterval);
-                if (state.colorInterval) clearInterval(state.colorInterval);
-                if (state.animationFrame) cancelAnimationFrame(state.animationFrame);
+                if (state.weatherInterval) clearInterval(state.weatherInterval);
             } else {
                 state.isHidden = false;
                 startTimers();
+            }
+        }
+
+        // Weather and sky gradient functions
+        async function fetchWeatherData() {
+            try {
+                const url = `${CONSTANTS.WEATHER_API_URL}?latitude=${CONSTANTS.HAIFA_LAT}&longitude=${CONSTANTS.HAIFA_LON}&current_weather=true&timezone=${CONSTANTS.HAIFA_TIMEZONE}`;
+                const response = await fetch(url);
+                
+                if (!response.ok) {
+                    throw new Error(`Weather API error: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                state.currentWeather = data.current_weather;
+                state.lastWeatherUpdate = Date.now();
+                
+                console.log('Weather updated:', state.currentWeather);
+                updateSkyGradient();
+                
+            } catch (error) {
+                console.error('Failed to fetch weather data:', error);
+                // Fallback to time-based sky without weather
+                updateSkyGradient();
+            }
+        }
+
+        function getTimeOfDay() {
+            try {
+                const now = new Date();
+                const haifaTime = new Intl.DateTimeFormat('en-US', {
+                    timeZone: CONSTANTS.HAIFA_TIMEZONE,
+                    hour: 'numeric',
+                    minute: 'numeric',
+                    hour12: false
+                }).format(now);
+                
+                const [hours, minutes] = haifaTime.split(':').map(Number);
+                const totalMinutes = hours * 60 + minutes;
+                
+                // Define time periods in minutes from midnight
+                if (totalMinutes >= 300 && totalMinutes < 420) return 'dawn';      // 5:00-7:00
+                if (totalMinutes >= 420 && totalMinutes < 600) return 'morning';   // 7:00-10:00
+                if (totalMinutes >= 600 && totalMinutes < 900) return 'noon';      // 10:00-15:00
+                if (totalMinutes >= 900 && totalMinutes < 1080) return 'afternoon'; // 15:00-18:00
+                if (totalMinutes >= 1080 && totalMinutes < 1200) return 'sunset';   // 18:00-20:00
+                if (totalMinutes >= 1200 && totalMinutes < 1320) return 'dusk';     // 20:00-22:00
+                return 'night'; // 22:00-5:00
+                
+            } catch (error) {
+                console.error('Error getting time of day:', error);
+                return 'morning'; // fallback
+            }
+        }
+
+        function getWeatherCondition() {
+            if (!state.currentWeather) return 'clear';
+            
+            const weatherCode = state.currentWeather.weathercode;
+            
+            // WMO Weather interpretation codes
+            if (weatherCode === 0) return 'clear';                    // Clear sky
+            if (weatherCode <= 3) return 'cloudy';                    // Partly cloudy
+            if (weatherCode <= 48) return 'fog';                      // Fog
+            if (weatherCode <= 67) return 'light-rain';               // Light rain
+            if (weatherCode <= 77) return 'heavy-rain';               // Heavy rain
+            if (weatherCode <= 86) return 'snow';                     // Snow
+            if (weatherCode <= 99) return 'heavy-rain';               // Thunderstorm
+            
+            return 'clear'; // fallback
+        }
+
+        function updateSkyGradient() {
+            try {
+                const timeOfDay = getTimeOfDay();
+                const weatherCondition = getWeatherCondition();
+                
+                let skyClass = `sky-${timeOfDay}`;
+                
+                // Modify based on weather conditions
+                if (weatherCondition !== 'clear') {
+                    if (weatherCondition === 'cloudy') {
+                        skyClass = timeOfDay === 'night' ? 'sky-cloudy' : skyClass;
+                        if (timeOfDay === 'noon' || timeOfDay === 'morning') {
+                            skyClass = 'sky-cloudy';
+                        }
+                    } else {
+                        skyClass = `sky-${weatherCondition}`;
+                    }
+                } else {
+                    skyClass += '-clear';
+                }
+                
+                // Only update if the sky class has changed
+                if (state.currentSkyClass !== skyClass) {
+                    // Remove previous sky class
+                    if (state.currentSkyClass) {
+                        document.body.classList.remove(state.currentSkyClass);
+                    }
+                    
+                    // Add new sky class
+                    document.body.classList.add(skyClass);
+                    state.currentSkyClass = skyClass;
+                    
+                    console.log(`Sky updated: ${skyClass} (${timeOfDay}, ${weatherCondition})`);
+                }
+                
+            } catch (error) {
+                console.error('Error updating sky gradient:', error);
             }
         }
 
@@ -588,6 +812,9 @@
                 // Update progress for screen readers
                 updateProgressForScreenReaders(now);
                 
+                // Update sky gradient based on current time (weather updates separately)
+                updateSkyGradient();
+                
             } catch (error) {
                 console.error('Error in updateTimer:', error);
                 showError('Timer update failed');
@@ -736,12 +963,18 @@
             try {
                 // Clear existing intervals
                 if (state.timerInterval) clearInterval(state.timerInterval);
+                if (state.weatherInterval) clearInterval(state.weatherInterval);
                 
                 // Start timer
                 state.timerInterval = setInterval(updateTimer, CONSTANTS.UPDATE_INTERVAL);
                 
-                // Initial update
+                // Start weather updates
+                state.weatherInterval = setInterval(fetchWeatherData, CONSTANTS.WEATHER_UPDATE_INTERVAL);
+                
+                // Initial updates
                 updateTimer();
+                fetchWeatherData(); // Initial weather fetch
+                
             } catch (error) {
                 console.error('Error starting timers:', error);
                 showError('Failed to start timers');
@@ -750,6 +983,7 @@
 
         function cleanup() {
             if (state.timerInterval) clearInterval(state.timerInterval);
+            if (state.weatherInterval) clearInterval(state.weatherInterval);
         }
 
         // Initialize the application
