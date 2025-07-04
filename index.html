@@ -249,53 +249,7 @@
             border-radius: 8px;
         }
 
-        /* User controls */
-        .controls {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            display: flex;
-            gap: 10px;
-            z-index: 10;
-        }
 
-        .control-btn {
-            background: var(--primary-color);
-            color: white;
-            border: none;
-            border-radius: 20px;
-            padding: 8px 16px;
-            font-size: 14px;
-            cursor: pointer;
-            transition: opacity 0.2s ease;
-            opacity: 0.7;
-        }
-
-        .control-btn:hover {
-            opacity: 1;
-        }
-
-        .control-btn:focus {
-            outline: 2px solid var(--primary-color);
-            outline-offset: 2px;
-            opacity: 1;
-        }
-
-        .control-btn.paused {
-            background: var(--secondary-color);
-        }
-
-        @media (max-width: 480px) {
-            .controls {
-                top: 10px;
-                right: 10px;
-            }
-            
-            .control-btn {
-                padding: 6px 12px;
-                font-size: 12px;
-            }
-        }
 
         @media (max-width: 900px) {
             .container {
@@ -445,12 +399,6 @@
         <div class="wave wave3"></div>
     </div>
     
-    <!-- User controls -->
-    <div class="controls">
-        <button id="pause-btn" class="control-btn" aria-label="Pause timer">⏸️ Pause</button>
-        <button id="share-btn" class="control-btn" aria-label="Share this page">📤 Share</button>
-    </div>
-
     <main class="container">
         <header>
             <h1>Ilya Altman</h1>
@@ -510,8 +458,7 @@
             mouseXInterpolated: 0,
             isHidden: false,
             lastMessage: '',
-            hasError: false,
-            isPaused: false
+            hasError: false
         };
 
         // Initialize dates with error handling
@@ -1041,60 +988,8 @@
             }
         }, 16); // ~60fps
 
-        // User control functions
-        function togglePause() {
-            state.isPaused = !state.isPaused;
-            const pauseBtn = document.getElementById('pause-btn');
-            
-            if (state.isPaused) {
-                cleanup();
-                if (pauseBtn) {
-                    pauseBtn.textContent = '▶️ Play';
-                    pauseBtn.classList.add('paused');
-                    pauseBtn.setAttribute('aria-label', 'Resume timer');
-                }
-            } else {
-                startTimers();
-                if (pauseBtn) {
-                    pauseBtn.textContent = '⏸️ Pause';
-                    pauseBtn.classList.remove('paused');
-                    pauseBtn.setAttribute('aria-label', 'Pause timer');
-                }
-            }
-        }
-
-        function shareTimer() {
-            try {
-                const age = calculateAccurateAge(state.birthDate, new Date());
-                const shareText = `Check out Ilya Altman's life timer - ${age.totalDays} days of growing stronger! 🌟`;
-                
-                if (navigator.share) {
-                    navigator.share({
-                        title: 'Ilya Altman - Growing Stronger Every Second',
-                        text: shareText,
-                        url: window.location.href
-                    });
-                } else {
-                    // Fallback to clipboard
-                    const fullText = `${shareText} ${window.location.href}`;
-                    navigator.clipboard.writeText(fullText).then(() => {
-                        const shareBtn = document.getElementById('share-btn');
-                        if (shareBtn) {
-                            const originalText = shareBtn.textContent;
-                            shareBtn.textContent = '✅ Copied!';
-                            setTimeout(() => {
-                                shareBtn.textContent = originalText;
-                            }, 2000);
-                        }
-                    });
-                }
-            } catch (error) {
-                console.error('Error sharing:', error);
-            }
-        }
-
         function startTimers() {
-            if (state.hasError || state.isPaused) return;
+            if (state.hasError) return;
             
             try {
                 // Clear existing intervals
@@ -1133,35 +1028,6 @@
                 document.addEventListener('mousemove', handleMouseMove, { passive: true });
                 document.addEventListener('visibilitychange', handleVisibilityChange);
                 window.addEventListener('beforeunload', cleanup);
-                
-                // User control event listeners
-                const pauseBtn = document.getElementById('pause-btn');
-                const shareBtn = document.getElementById('share-btn');
-                
-                if (pauseBtn) {
-                    pauseBtn.addEventListener('click', togglePause);
-                }
-                
-                if (shareBtn) {
-                    shareBtn.addEventListener('click', shareTimer);
-                }
-                
-                // Keyboard shortcuts
-                document.addEventListener('keydown', (e) => {
-                    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-                    
-                    switch (e.key) {
-                        case ' ':
-                        case 'p':
-                            e.preventDefault();
-                            togglePause();
-                            break;
-                        case 's':
-                            e.preventDefault();
-                            shareTimer();
-                            break;
-                    }
-                });
                 
                 // Start the application
                 startTimers();
