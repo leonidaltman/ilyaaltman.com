@@ -55,7 +55,7 @@
             --sky-color-1: #87CEEB;
             --sky-color-2: #98D8E8;
             --sky-color-3: #B0E0E6;
-            --sky-transition-duration: 30s;
+            --sky-transition-duration: 10s;
         }
 
         body {
@@ -208,6 +208,96 @@
             --sky-color-1: #D3D3D3;
             --sky-color-2: #DCDCDC;
             --sky-color-3: #F5F5F5;
+        }
+
+        /* Time-based weather variations */
+        /* Cloudy with time progression */
+        .sky-cloudy-dawn {
+            --sky-color-1: #F5B7B1;
+            --sky-color-2: #E8E8E8;
+            --sky-color-3: #F0F0F0;
+        }
+
+        .sky-cloudy-morning {
+            --sky-color-1: #AED6F1;
+            --sky-color-2: #D5DBDB;
+            --sky-color-3: #EAEDED;
+        }
+
+        .sky-cloudy-afternoon {
+            --sky-color-1: #F9E79F;
+            --sky-color-2: #D5D8DC;
+            --sky-color-3: #F8F9F9;
+        }
+
+        .sky-cloudy-sunset {
+            --sky-color-1: #F1948A;
+            --sky-color-2: #D5DBDB;
+            --sky-color-3: #EBEDEF;
+        }
+
+        .sky-cloudy-dusk {
+            --sky-color-1: #BB8FCE;
+            --sky-color-2: #CCD1D1;
+            --sky-color-3: #E5E7E9;
+        }
+
+        .sky-cloudy-night {
+            --sky-color-1: #5D6D7E;
+            --sky-color-2: #85929E;
+            --sky-color-3: #AEB6BF;
+        }
+
+        /* Rain with time variations */
+        .sky-light-rain-golden {
+            --sky-color-1: #A04000;
+            --sky-color-2: #8C7853;
+            --sky-color-3: #B7950B;
+        }
+
+        .sky-light-rain-dark {
+            --sky-color-1: #34495E;
+            --sky-color-2: #5D6D7E;
+            --sky-color-3: #85929E;
+        }
+
+        .sky-heavy-rain-night {
+            --sky-color-1: #1C2833;
+            --sky-color-2: #283747;
+            --sky-color-3: #34495E;
+        }
+
+        /* Thunderstorm - very dramatic */
+        .sky-thunderstorm {
+            --sky-color-1: #0F1419;
+            --sky-color-2: #1C2833;
+            --sky-color-3: #283747;
+        }
+
+        /* Snow with time variations */
+        .sky-snow-dawn {
+            --sky-color-1: #FADBD8;
+            --sky-color-2: #FBFCFC;
+            --sky-color-3: #FFFFFF;
+        }
+
+        .sky-snow-night {
+            --sky-color-1: #AEB6BF;
+            --sky-color-2: #D5DBDB;
+            --sky-color-3: #F8F9F9;
+        }
+
+        /* Fog with time variations */
+        .sky-fog-dawn {
+            --sky-color-1: #E8DAEF;
+            --sky-color-2: #F4F6F6;
+            --sky-color-3: #FDFEFE;
+        }
+
+        .sky-fog-night {
+            --sky-color-1: #85929E;
+            --sky-color-2: #AEB6BF;
+            --sky-color-3: #D5DBDB;
         }
 
         .container {
@@ -543,6 +633,7 @@
             lastWeatherUpdate: 0,
             currentSkyClass: '',
             lastWeatherCondition: '',
+            lastTimeOfDay: null,
             weatherSystem: null
         };
 
@@ -640,14 +731,23 @@
                 const [hours, minutes] = haifaTime.split(':').map(Number);
                 const totalMinutes = hours * 60 + minutes;
                 
+                let timeOfDay;
                 // Define time periods in minutes from midnight
-                if (totalMinutes >= 300 && totalMinutes < 420) return 'dawn';      // 5:00-7:00
-                if (totalMinutes >= 420 && totalMinutes < 600) return 'morning';   // 7:00-10:00
-                if (totalMinutes >= 600 && totalMinutes < 900) return 'noon';      // 10:00-15:00
-                if (totalMinutes >= 900 && totalMinutes < 1080) return 'afternoon'; // 15:00-18:00
-                if (totalMinutes >= 1080 && totalMinutes < 1200) return 'sunset';   // 18:00-20:00
-                if (totalMinutes >= 1200 && totalMinutes < 1320) return 'dusk';     // 20:00-22:00
-                return 'night'; // 22:00-5:00
+                if (totalMinutes >= 300 && totalMinutes < 420) timeOfDay = 'dawn';      // 5:00-7:00
+                else if (totalMinutes >= 420 && totalMinutes < 600) timeOfDay = 'morning';   // 7:00-10:00
+                else if (totalMinutes >= 600 && totalMinutes < 900) timeOfDay = 'noon';      // 10:00-15:00
+                else if (totalMinutes >= 900 && totalMinutes < 1080) timeOfDay = 'afternoon'; // 15:00-18:00
+                else if (totalMinutes >= 1080 && totalMinutes < 1200) timeOfDay = 'sunset';   // 18:00-20:00
+                else if (totalMinutes >= 1200 && totalMinutes < 1320) timeOfDay = 'dusk';     // 20:00-22:00
+                else timeOfDay = 'night'; // 22:00-5:00
+                
+                // Debug logging to track time changes
+                if (state.lastTimeOfDay !== timeOfDay) {
+                    console.log(`⏰ Time period changed: ${state.lastTimeOfDay || 'unknown'} → ${timeOfDay} (${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')} Haifa time)`);
+                    state.lastTimeOfDay = timeOfDay;
+                }
+                
+                return timeOfDay;
                 
             } catch (error) {
                 console.error('Error getting time of day:', error);
@@ -998,20 +1098,61 @@
                 const timeOfDay = getTimeOfDay();
                 const weatherCondition = getWeatherCondition();
                 
-                let skyClass = `sky-${timeOfDay}`;
+                // Build sky class with proper time-based progression
+                let skyClass;
                 
-                // Modify based on weather conditions
-                if (weatherCondition !== 'clear') {
-                    if (weatherCondition === 'cloudy') {
-                        skyClass = timeOfDay === 'night' ? 'sky-cloudy' : skyClass;
-                        if (timeOfDay === 'noon' || timeOfDay === 'morning') {
-                            skyClass = 'sky-cloudy';
-                        }
-                    } else {
-                        skyClass = `sky-${weatherCondition}`;
-                    }
+                if (weatherCondition === 'clear') {
+                    // Clear weather: use time-based gradients
+                    skyClass = `sky-${timeOfDay}-clear`;
                 } else {
-                    skyClass += '-clear';
+                    // Weather conditions: combine time and weather for dynamic sky changes
+                    switch (weatherCondition) {
+                        case 'cloudy':
+                            // Cloudy weather still changes throughout the day
+                            if (timeOfDay === 'dawn') skyClass = 'sky-cloudy-dawn';
+                            else if (timeOfDay === 'morning') skyClass = 'sky-cloudy-morning';
+                            else if (timeOfDay === 'noon') skyClass = 'sky-cloudy';
+                            else if (timeOfDay === 'afternoon') skyClass = 'sky-cloudy-afternoon';
+                            else if (timeOfDay === 'sunset') skyClass = 'sky-cloudy-sunset';
+                            else if (timeOfDay === 'dusk') skyClass = 'sky-cloudy-dusk';
+                            else skyClass = 'sky-cloudy-night';
+                            break;
+                            
+                        case 'light-rain':
+                            // Light rain changes with time of day
+                            if (timeOfDay === 'dawn' || timeOfDay === 'sunset') skyClass = 'sky-light-rain-golden';
+                            else if (timeOfDay === 'night' || timeOfDay === 'dusk') skyClass = 'sky-light-rain-dark';
+                            else skyClass = 'sky-light-rain';
+                            break;
+                            
+                        case 'heavy-rain':
+                            // Heavy rain is consistently dark but varies slightly
+                            if (timeOfDay === 'night' || timeOfDay === 'dusk') skyClass = 'sky-heavy-rain-night';
+                            else skyClass = 'sky-heavy-rain';
+                            break;
+                            
+                        case 'thunderstorm':
+                            // Thunderstorms are very dramatic
+                            skyClass = 'sky-thunderstorm';
+                            break;
+                            
+                        case 'snow':
+                            // Snow varies from bright day to dark night
+                            if (timeOfDay === 'dawn') skyClass = 'sky-snow-dawn';
+                            else if (timeOfDay === 'night' || timeOfDay === 'dusk') skyClass = 'sky-snow-night';
+                            else skyClass = 'sky-snow';
+                            break;
+                            
+                        case 'fog':
+                            // Fog varies throughout the day
+                            if (timeOfDay === 'dawn') skyClass = 'sky-fog-dawn';
+                            else if (timeOfDay === 'night') skyClass = 'sky-fog-night';
+                            else skyClass = 'sky-fog';
+                            break;
+                            
+                        default:
+                            skyClass = `sky-${timeOfDay}-clear`;
+                    }
                 }
                 
                 // Update weather animations when conditions change
@@ -1404,6 +1545,66 @@
                 showError('Application failed to start');
             }
         }
+
+        // Testing functions for development
+        window.testSky = function(timeOfDay, weatherCondition = 'clear') {
+            console.log(`🧪 Testing sky: ${timeOfDay} + ${weatherCondition}`);
+            
+            // Temporarily override time/weather
+            const originalGetTimeOfDay = getTimeOfDay;
+            const originalGetWeatherCondition = getWeatherCondition;
+            
+            window.getTimeOfDay = () => timeOfDay;
+            window.getWeatherCondition = () => weatherCondition;
+            
+            // Force update
+            updateSkyGradient();
+            if (state.weatherSystem) {
+                state.weatherSystem.changeWeather(weatherCondition);
+            }
+            
+            // Restore original functions after 5 seconds
+            setTimeout(() => {
+                window.getTimeOfDay = originalGetTimeOfDay;
+                window.getWeatherCondition = originalGetWeatherCondition;
+                updateSkyGradient();
+                console.log('🧪 Test ended, restored normal sky behavior');
+            }, 5000);
+        };
+
+        window.testAllSkies = function() {
+            const times = ['dawn', 'morning', 'noon', 'afternoon', 'sunset', 'dusk', 'night'];
+            const weathers = ['clear', 'cloudy', 'light-rain', 'heavy-rain', 'snow', 'fog', 'thunderstorm'];
+            
+            console.log('🧪 Testing all sky combinations...');
+            
+            let index = 0;
+            const testNext = () => {
+                if (index < times.length) {
+                    const time = times[index];
+                    weathers.forEach((weather, wIndex) => {
+                        setTimeout(() => {
+                            testSky(time, weather);
+                            console.log(`🧪 Testing ${time} + ${weather} (${index * weathers.length + wIndex + 1}/${times.length * weathers.length})`);
+                        }, (index * weathers.length + wIndex) * 2000);
+                    });
+                    index++;
+                }
+            };
+            
+            testNext();
+        };
+
+        // Add helpful console message
+        console.log(`
+🌈 Sky System Ready!
+Commands:
+• testSky('dawn', 'clear') - Test specific time/weather
+• testSky('sunset', 'thunderstorm') - Test dramatic combinations  
+• testAllSkies() - Cycle through all combinations
+• Available times: dawn, morning, noon, afternoon, sunset, dusk, night
+• Available weather: clear, cloudy, light-rain, heavy-rain, snow, fog, thunderstorm
+        `);
 
         // Start when DOM is ready
         if (document.readyState === 'loading') {
