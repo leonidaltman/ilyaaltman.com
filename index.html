@@ -76,6 +76,152 @@
             color: var(--text-color);
             -webkit-font-smoothing: antialiased;
             transition: background var(--sky-transition-duration) ease-in-out;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Weather animation layers */
+        .weather-layer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+            opacity: 0;
+            transition: opacity 2s ease-in-out;
+        }
+
+        .weather-layer.active {
+            opacity: 1;
+        }
+
+        /* Rain effects */
+        .rain-layer {
+            background-image: 
+                linear-gradient(180deg, transparent 0%, rgba(135, 206, 235, 0.1) 100%),
+                linear-gradient(85deg, transparent 40%, rgba(255, 255, 255, 0.3) 41%, rgba(255, 255, 255, 0.3) 43%, transparent 44%),
+                linear-gradient(87deg, transparent 40%, rgba(255, 255, 255, 0.2) 41%, rgba(255, 255, 255, 0.2) 43%, transparent 44%),
+                linear-gradient(89deg, transparent 40%, rgba(255, 255, 255, 0.1) 41%, rgba(255, 255, 255, 0.1) 43%, transparent 44%);
+            background-size: 100% 100%, 20px 100px, 30px 120px, 25px 110px;
+            animation: rain-fall 0.8s linear infinite;
+        }
+
+        .heavy-rain-layer {
+            background-image: 
+                linear-gradient(180deg, rgba(75, 85, 99, 0.2) 0%, rgba(107, 114, 128, 0.3) 100%),
+                linear-gradient(85deg, transparent 35%, rgba(255, 255, 255, 0.4) 36%, rgba(255, 255, 255, 0.4) 39%, transparent 40%),
+                linear-gradient(87deg, transparent 35%, rgba(255, 255, 255, 0.3) 36%, rgba(255, 255, 255, 0.3) 39%, transparent 40%),
+                linear-gradient(89deg, transparent 35%, rgba(255, 255, 255, 0.2) 36%, rgba(255, 255, 255, 0.2) 39%, transparent 40%);
+            background-size: 100% 100%, 15px 80px, 20px 90px, 18px 85px;
+            animation: heavy-rain-fall 0.5s linear infinite;
+        }
+
+        /* Snow effects */
+        .snow-layer {
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(255, 255, 255, 0.8) 1px, transparent 1px),
+                radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.6) 1px, transparent 1px),
+                radial-gradient(circle at 40% 40%, rgba(255, 255, 255, 0.7) 1px, transparent 1px),
+                radial-gradient(circle at 90% 10%, rgba(255, 255, 255, 0.5) 1px, transparent 1px),
+                radial-gradient(circle at 30% 70%, rgba(255, 255, 255, 0.9) 1px, transparent 1px);
+            background-size: 100px 100px, 120px 120px, 80px 80px, 140px 140px, 90px 90px;
+            animation: snow-fall 8s linear infinite;
+        }
+
+        /* Cloud effects */
+        .cloud-layer {
+            background-image: 
+                radial-gradient(ellipse at 30% 50%, rgba(255, 255, 255, 0.3) 30%, transparent 70%),
+                radial-gradient(ellipse at 70% 30%, rgba(255, 255, 255, 0.2) 25%, transparent 65%),
+                radial-gradient(ellipse at 50% 80%, rgba(255, 255, 255, 0.25) 35%, transparent 75%);
+            background-size: 300px 150px, 250px 120px, 320px 160px;
+            animation: clouds-drift 60s linear infinite;
+        }
+
+        /* Fog effects */
+        .fog-layer {
+            background: 
+                linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.1) 50%, transparent 70%),
+                linear-gradient(-45deg, transparent 40%, rgba(240, 248, 255, 0.15) 60%, transparent 80%);
+            background-size: 200px 200px, 180px 180px;
+            animation: fog-drift 30s ease-in-out infinite;
+        }
+
+        /* Lightning flash */
+        .lightning-layer {
+            background: radial-gradient(circle at center, rgba(255, 255, 255, 0.9) 0%, transparent 50%);
+            animation: lightning-flash 0.2s ease-out;
+        }
+
+        /* Wind effects */
+        .wind-layer {
+            background-image: 
+                linear-gradient(75deg, transparent 0%, rgba(255, 255, 255, 0.05) 30%, transparent 60%),
+                linear-gradient(105deg, transparent 20%, rgba(255, 255, 255, 0.03) 50%, transparent 80%);
+            background-size: 400px 200px, 300px 150px;
+            animation: wind-blow 4s ease-in-out infinite;
+        }
+
+        /* Enhanced cloud effects with varying speeds */
+        .cloud-layer.windy {
+            animation: clouds-drift-fast 30s linear infinite;
+        }
+
+        /* Stormy atmosphere effects */
+        .storm-atmosphere {
+            background: 
+                radial-gradient(ellipse at 20% 10%, rgba(75, 85, 99, 0.1) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 90%, rgba(55, 65, 81, 0.15) 0%, transparent 60%),
+                linear-gradient(180deg, rgba(31, 41, 55, 0.05) 0%, transparent 100%);
+            animation: storm-shift 8s ease-in-out infinite;
+        }
+
+        /* Animation keyframes */
+        @keyframes rain-fall {
+            0% { background-position: 0% 0%, 0% 0%, 0% 0%, 0% 0%; }
+            100% { background-position: 0% 100%, 5% 100%, -3% 100%, 2% 100%; }
+        }
+
+        @keyframes heavy-rain-fall {
+            0% { background-position: 0% 0%, 0% 0%, 0% 0%, 0% 0%; }
+            100% { background-position: 0% 100%, 8% 100%, -5% 100%, 3% 100%; }
+        }
+
+        @keyframes snow-fall {
+            0% { background-position: 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%; }
+            100% { background-position: 10% 100%, -20% 100%, 15% 100%, -10% 100%, 25% 100%; }
+        }
+
+        @keyframes clouds-drift {
+            0% { background-position: -300px 0%, -250px 0%, -320px 0%; }
+            100% { background-position: 100vw 0%, calc(100vw + 250px) 0%, calc(100vw + 320px) 0%; }
+        }
+
+        @keyframes fog-drift {
+            0%, 100% { background-position: 0% 0%, 100% 100%; opacity: 0.3; }
+            50% { background-position: 100% 50%, 0% 50%; opacity: 0.6; }
+        }
+
+        @keyframes lightning-flash {
+            0%, 90%, 100% { opacity: 0; }
+            5%, 85% { opacity: 1; }
+        }
+
+        @keyframes wind-blow {
+            0%, 100% { background-position: 0% 0%, 0% 0%; opacity: 0.3; }
+            50% { background-position: 100% 100%, -50% 50%; opacity: 0.8; }
+        }
+
+        @keyframes clouds-drift-fast {
+            0% { background-position: -300px 0%, -250px 0%, -320px 0%; }
+            100% { background-position: calc(100vw + 300px) 0%, calc(100vw + 500px) 0%, calc(100vw + 640px) 0%; }
+        }
+
+        @keyframes storm-shift {
+            0%, 100% { opacity: 0.4; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(1.05); }
         }
 
         /* Sky gradient presets for different conditions */
@@ -250,6 +396,10 @@
                 animation: none !important;
                 transition: none !important;
             }
+            
+            .weather-layer {
+                display: none !important;
+            }
         }
 
         /* High contrast mode support */
@@ -417,6 +567,16 @@
     </style>
 </head>
 <body>
+    <!-- Dynamic weather animation layers -->
+    <div id="rain-layer" class="weather-layer rain-layer"></div>
+    <div id="heavy-rain-layer" class="weather-layer heavy-rain-layer"></div>
+    <div id="snow-layer" class="weather-layer snow-layer"></div>
+    <div id="cloud-layer" class="weather-layer cloud-layer"></div>
+    <div id="fog-layer" class="weather-layer fog-layer"></div>
+    <div id="wind-layer" class="weather-layer wind-layer"></div>
+    <div id="storm-atmosphere" class="weather-layer storm-atmosphere"></div>
+    <div id="lightning-layer" class="weather-layer lightning-layer"></div>
+
     <main class="container">
         <header>
             <h1>Ilya Altman</h1>
@@ -477,12 +637,15 @@
             eighteenYears: null,
             timerInterval: null,
             weatherInterval: null,
+            lightningInterval: null,
             isHidden: false,
             lastMessage: '',
             hasError: false,
             currentWeather: null,
             lastWeatherUpdate: 0,
-            currentSkyClass: ''
+            currentSkyClass: '',
+            activeWeatherLayers: new Set(),
+            lastWeatherCondition: ''
         };
 
         // Initialize dates with error handling
@@ -530,6 +693,7 @@
                 state.isHidden = true;
                 if (state.timerInterval) clearInterval(state.timerInterval);
                 if (state.weatherInterval) clearInterval(state.weatherInterval);
+                stopLightningEffects();
             } else {
                 state.isHidden = false;
                 startTimers();
@@ -593,16 +757,93 @@
             
             const weatherCode = state.currentWeather.weathercode;
             
-            // WMO Weather interpretation codes
+            // WMO Weather interpretation codes with enhanced detection
             if (weatherCode === 0) return 'clear';                    // Clear sky
             if (weatherCode <= 3) return 'cloudy';                    // Partly cloudy
             if (weatherCode <= 48) return 'fog';                      // Fog
-            if (weatherCode <= 67) return 'light-rain';               // Light rain
+            if (weatherCode <= 67) return 'light-rain';               // Light rain/drizzle
             if (weatherCode <= 77) return 'heavy-rain';               // Heavy rain
             if (weatherCode <= 86) return 'snow';                     // Snow
-            if (weatherCode <= 99) return 'heavy-rain';               // Thunderstorm
+            if (weatherCode >= 95) return 'thunderstorm';             // Thunderstorm
+            if (weatherCode <= 99) return 'heavy-rain';               // Other rain
             
             return 'clear'; // fallback
+        }
+
+        // Weather animation management
+        function activateWeatherLayer(layerId) {
+            if (state.activeWeatherLayers.has(layerId)) return;
+            
+            const layer = document.getElementById(layerId);
+            if (layer) {
+                layer.classList.add('active');
+                state.activeWeatherLayers.add(layerId);
+                console.log(`Activated weather layer: ${layerId}`);
+            }
+        }
+
+        function deactivateWeatherLayer(layerId) {
+            if (!state.activeWeatherLayers.has(layerId)) return;
+            
+            const layer = document.getElementById(layerId);
+            if (layer) {
+                layer.classList.remove('active');
+                state.activeWeatherLayers.delete(layerId);
+                console.log(`Deactivated weather layer: ${layerId}`);
+            }
+        }
+
+        function clearAllWeatherLayers() {
+            const layers = ['rain-layer', 'heavy-rain-layer', 'snow-layer', 'cloud-layer', 'fog-layer', 'wind-layer', 'storm-atmosphere', 'lightning-layer'];
+            layers.forEach(layerId => deactivateWeatherLayer(layerId));
+            
+            // Remove windy class from clouds
+            const cloudLayer = document.getElementById('cloud-layer');
+            if (cloudLayer) {
+                cloudLayer.classList.remove('windy');
+            }
+        }
+
+        function triggerLightning() {
+            const lightningLayer = document.getElementById('lightning-layer');
+            if (lightningLayer) {
+                // Remove active class to reset animation
+                lightningLayer.classList.remove('active');
+                
+                // Trigger reflow to restart animation
+                lightningLayer.offsetHeight;
+                
+                // Add active class to start lightning animation
+                lightningLayer.classList.add('active');
+                
+                // Remove after animation completes
+                setTimeout(() => {
+                    lightningLayer.classList.remove('active');
+                }, 200);
+            }
+        }
+
+        function startLightningEffects() {
+            // Random lightning flashes during thunderstorms
+            if (state.lightningInterval) clearInterval(state.lightningInterval);
+            
+            state.lightningInterval = setInterval(() => {
+                if (Math.random() < 0.3) { // 30% chance every interval
+                    triggerLightning();
+                    
+                    // Sometimes double flash
+                    if (Math.random() < 0.4) {
+                        setTimeout(triggerLightning, 150);
+                    }
+                }
+            }, 3000 + Math.random() * 7000); // 3-10 second intervals
+        }
+
+        function stopLightningEffects() {
+            if (state.lightningInterval) {
+                clearInterval(state.lightningInterval);
+                state.lightningInterval = null;
+            }
         }
 
         function updateSkyGradient() {
@@ -626,7 +867,75 @@
                     skyClass += '-clear';
                 }
                 
-                // Only update if the sky class has changed
+                // Update weather animations when conditions change
+                if (state.lastWeatherCondition !== weatherCondition) {
+                    clearAllWeatherLayers();
+                    stopLightningEffects();
+                    
+                    // Activate appropriate weather animations
+                    switch (weatherCondition) {
+                        case 'cloudy':
+                            activateWeatherLayer('cloud-layer');
+                            // Add wind effects during cloudy conditions
+                            if (Math.random() < 0.6) {
+                                activateWeatherLayer('wind-layer');
+                                const cloudLayer = document.getElementById('cloud-layer');
+                                if (cloudLayer) cloudLayer.classList.add('windy');
+                            }
+                            break;
+                            
+                        case 'light-rain':
+                            activateWeatherLayer('rain-layer');
+                            activateWeatherLayer('cloud-layer');
+                            activateWeatherLayer('wind-layer');
+                            break;
+                            
+                        case 'heavy-rain':
+                            activateWeatherLayer('heavy-rain-layer');
+                            activateWeatherLayer('cloud-layer');
+                            activateWeatherLayer('wind-layer');
+                            activateWeatherLayer('storm-atmosphere');
+                            const cloudLayer = document.getElementById('cloud-layer');
+                            if (cloudLayer) cloudLayer.classList.add('windy');
+                            break;
+                            
+                        case 'thunderstorm':
+                            activateWeatherLayer('heavy-rain-layer');
+                            activateWeatherLayer('cloud-layer');
+                            activateWeatherLayer('wind-layer');
+                            activateWeatherLayer('storm-atmosphere');
+                            const stormCloudLayer = document.getElementById('cloud-layer');
+                            if (stormCloudLayer) stormCloudLayer.classList.add('windy');
+                            startLightningEffects();
+                            break;
+                            
+                        case 'snow':
+                            activateWeatherLayer('snow-layer');
+                            activateWeatherLayer('cloud-layer');
+                            // Light wind effects during snow
+                            if (Math.random() < 0.4) {
+                                activateWeatherLayer('wind-layer');
+                            }
+                            break;
+                            
+                        case 'fog':
+                            activateWeatherLayer('fog-layer');
+                            break;
+                            
+                        case 'clear':
+                        default:
+                            // Clear conditions - sometimes light wind
+                            if (Math.random() < 0.2) {
+                                activateWeatherLayer('wind-layer');
+                            }
+                            break;
+                    }
+                    
+                    state.lastWeatherCondition = weatherCondition;
+                    console.log(`Weather animations updated: ${weatherCondition}`);
+                }
+                
+                // Only update sky gradient if the sky class has changed
                 if (state.currentSkyClass !== skyClass) {
                     // Remove previous sky class
                     if (state.currentSkyClass) {
@@ -984,6 +1293,8 @@
         function cleanup() {
             if (state.timerInterval) clearInterval(state.timerInterval);
             if (state.weatherInterval) clearInterval(state.weatherInterval);
+            stopLightningEffects();
+            clearAllWeatherLayers();
         }
 
         // Initialize the application
