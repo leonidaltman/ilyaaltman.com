@@ -374,9 +374,101 @@
             return currentPhase ? currentPhase.message : "Growing stronger every second";
         }
 
+        function calculateAccurateAge(birthDate, currentDate) {
+            // Handle countdown case (before birth)
+            if (currentDate < birthDate) {
+                const diff = birthDate - currentDate;
+                const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+                
+                return {
+                    isCountdown: true,
+                    years: 0,
+                    months: 0,
+                    days: days,
+                    hours: hours,
+                    minutes: minutes,
+                    seconds: seconds,
+                    totalDays: days
+                };
+            }
+
+            // Calculate years
+            let years = currentDate.getFullYear() - birthDate.getFullYear();
+            
+            // Create anniversary date for this year
+            let anniversaryThisYear = new Date(currentDate.getFullYear(), birthDate.getMonth(), birthDate.getDate(), 
+                                              birthDate.getHours(), birthDate.getMinutes(), birthDate.getSeconds(), birthDate.getMilliseconds());
+            
+            // If anniversary hasn't occurred this year, subtract one year
+            if (currentDate < anniversaryThisYear) {
+                years--;
+                anniversaryThisYear = new Date(currentDate.getFullYear() - 1, birthDate.getMonth(), birthDate.getDate(), 
+                                              birthDate.getHours(), birthDate.getMinutes(), birthDate.getSeconds(), birthDate.getMilliseconds());
+            }
+
+            // Calculate months from last anniversary
+            let months = currentDate.getMonth() - anniversaryThisYear.getMonth();
+            if (months < 0) {
+                months += 12;
+            }
+
+            // Create month anniversary date
+            let monthAnniversary = new Date(anniversaryThisYear);
+            monthAnniversary.setMonth(monthAnniversary.getMonth() + months);
+            
+            // Adjust for cases where the day doesn't exist in the target month (e.g., Jan 31 -> Feb 31)
+            if (monthAnniversary.getDate() !== birthDate.getDate()) {
+                monthAnniversary = new Date(monthAnniversary.getFullYear(), monthAnniversary.getMonth() + 1, 0, 
+                                           birthDate.getHours(), birthDate.getMinutes(), birthDate.getSeconds(), birthDate.getMilliseconds());
+            }
+
+            // If current date is before month anniversary, subtract one month
+            if (currentDate < monthAnniversary) {
+                months--;
+                if (months < 0) {
+                    months = 11;
+                    years--;
+                    anniversaryThisYear = new Date(currentDate.getFullYear() - 1, birthDate.getMonth(), birthDate.getDate(), 
+                                                  birthDate.getHours(), birthDate.getMinutes(), birthDate.getSeconds(), birthDate.getMilliseconds());
+                }
+                monthAnniversary = new Date(anniversaryThisYear);
+                monthAnniversary.setMonth(monthAnniversary.getMonth() + months);
+                
+                // Handle day adjustment again
+                if (monthAnniversary.getDate() !== birthDate.getDate()) {
+                    monthAnniversary = new Date(monthAnniversary.getFullYear(), monthAnniversary.getMonth() + 1, 0, 
+                                               birthDate.getHours(), birthDate.getMinutes(), birthDate.getSeconds(), birthDate.getMilliseconds());
+                }
+            }
+
+            // Calculate remaining days, hours, minutes, seconds
+            const remainingMs = currentDate - monthAnniversary;
+            const days = Math.floor(remainingMs / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((remainingMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((remainingMs % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((remainingMs % (1000 * 60)) / 1000);
+
+            // Calculate total days for message system
+            const totalMs = currentDate - birthDate;
+            const totalDays = Math.floor(totalMs / (1000 * 60 * 60 * 24));
+
+            return {
+                isCountdown: false,
+                years: Math.max(0, years),
+                months: Math.max(0, months),
+                days: Math.max(0, days),
+                hours: Math.max(0, hours),
+                minutes: Math.max(0, minutes),
+                seconds: Math.max(0, seconds),
+                totalDays: totalDays
+            };
+        }
+
         function updateTimer() {
             const now = new Date();
-            const diff = now - birthDate;
             const totalJourney = eighteenYears - birthDate;
             
             // Update water fill
@@ -384,34 +476,15 @@
             const waterFill = document.getElementById('water-fill');
             waterFill.style.height = `${Math.max(0, Math.min(progress, 100))}%`;
 
-            if (diff < 0) {
-                const countdown = Math.abs(diff);
-                const days = Math.floor(countdown / (1000 * 60 * 60 * 24));
-                const hours = Math.floor((countdown % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                const minutes = Math.floor((countdown % (1000 * 60 * 60)) / (1000 * 60));
-                const seconds = Math.floor((countdown % (1000 * 60)) / 1000);
+            // Calculate accurate age
+            const age = calculateAccurateAge(birthDate, now);
 
-                document.getElementById('timer').innerHTML = getTimeHTML(days, hours, minutes, seconds, 'until arrival', false);
-            } else {
-                // Calculate years and remaining days
-                let years = now.getFullYear() - birthDate.getFullYear();
-                const birthDateThisYear = new Date(now.getFullYear(), birthDate.getMonth(), birthDate.getDate());
-                
-                // Adjust if birthday hasn't occurred this year
-                if (now < birthDateThisYear) {
-                    years--;
-                }
-                
-                const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-                const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-                const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+            // Update timer display
+            document.getElementById('timer').innerHTML = getTimeHTML(age);
 
-                document.getElementById('timer').innerHTML = getTimeHTML(days, hours, minutes, seconds, 'of life', years);
-            }
-
+            // Update message with accurate day calculation
             const messageElement = document.querySelector('.message');
-            const newMessage = getAgeMessage(years ? days % 365 : days);
+            const newMessage = getAgeMessage(age.totalDays);
 
             if (messageElement.dataset.lastMessage !== newMessage) {
                 messageElement.style.opacity = '0';
@@ -423,93 +496,81 @@
             }
         }
 
-        function getTimeHTML(days, hours, minutes, seconds, suffix, years) {
-            const now = new Date();
-            
-            // Handle case when birth hasn't happened yet
-            if (now < birthDate) {
+        function getTimeHTML(age) {
+            // Handle countdown case (before birth)
+            if (age.isCountdown) {
                 return `
                     <div class="time-segment">
-                        <span class="time-value">${days}</span>
-                        <span class="time-label">days ${suffix}</span>
+                        <span class="time-value">${age.days}</span>
+                        <span class="time-label">days until arrival</span>
                     </div>
                     <div class="time-segment">
-                        <span class="time-value">${String(hours).padStart(2, '0')}</span>
+                        <span class="time-value">${String(age.hours).padStart(2, '0')}</span>
                         <span class="time-label">hours</span>
                     </div>
                     <div class="time-segment">
-                        <span class="time-value">${String(minutes).padStart(2, '0')}</span>
+                        <span class="time-value">${String(age.minutes).padStart(2, '0')}</span>
                         <span class="time-label">minutes</span>
                     </div>
                     <div class="time-segment">
-                        <span class="time-value">${String(seconds).padStart(2, '0')}</span>
+                        <span class="time-value">${String(age.seconds).padStart(2, '0')}</span>
                         <span class="time-label">seconds</span>
                     </div>
                 `;
             }
 
-            // Function to calculate months between dates considering time of day
-            function getMonthsDiff(d1, d2) {
-                let months = (d2.getFullYear() - d1.getFullYear()) * 12 + (d2.getMonth() - d1.getMonth());
-                
-                // Get the day difference considering time of day
-                const d1Day = d1.getDate() + d1.getHours()/24 + d1.getMinutes()/(24*60) + d1.getSeconds()/(24*60*60);
-                const d2Day = d2.getDate() + d2.getHours()/24 + d2.getMinutes()/(24*60) + d2.getSeconds()/(24*60*60);
-                
-                if (d2Day < d1Day) {
-                    months--;
-                }
-                
-                return months;
+            // Build the time display with accurate calculations
+            const segments = [];
+
+            // Add years if present
+            if (age.years > 0) {
+                segments.push(`
+                    <div class="time-segment">
+                        <span class="time-value">${age.years}</span>
+                        <span class="time-label">year${age.years > 1 ? 's' : ''} of life</span>
+                    </div>
+                `);
             }
 
-            // Calculate total months lived
-            const totalMonths = getMonthsDiff(birthDate, now);
-            
-            // Calculate years and remaining months
-            const yearsLived = Math.floor(totalMonths / 12);
-            const monthsAfterYears = totalMonths % 12;
-            
-            // Calculate remaining days
-            const lastMonthDate = new Date(now.getFullYear(), now.getMonth(), birthDate.getDate(), 
-                                         birthDate.getHours(), birthDate.getMinutes(), birthDate.getSeconds());
-            if (lastMonthDate > now) {
-                lastMonthDate.setMonth(lastMonthDate.getMonth() - 1);
+            // Add months if present
+            if (age.months > 0) {
+                const suffix = age.years > 0 ? '' : ' of life';
+                segments.push(`
+                    <div class="time-segment">
+                        <span class="time-value">${age.months}</span>
+                        <span class="time-label">month${age.months > 1 ? 's' : ''}${suffix}</span>
+                    </div>
+                `);
             }
-            const remainingDays = Math.floor((now - lastMonthDate) / (1000 * 60 * 60 * 24));
 
-            return `
-                ${yearsLived > 0 ? `
+            // Add days if present
+            if (age.days > 0) {
+                const suffix = (age.years === 0 && age.months === 0) ? ' of life' : '';
+                segments.push(`
+                    <div class="time-segment">
+                        <span class="time-value">${age.days}</span>
+                        <span class="time-label">day${age.days > 1 ? 's' : ''}${suffix}</span>
+                    </div>
+                `);
+            }
+
+            // Always show hours, minutes, and seconds
+            segments.push(`
                 <div class="time-segment">
-                    <span class="time-value">${yearsLived}</span>
-                    <span class="time-label">year${yearsLived > 1 ? 's' : ''} ${suffix}</span>
-                </div>
-                ` : ''}
-                ${monthsAfterYears > 0 ? `
-                <div class="time-segment">
-                    <span class="time-value">${monthsAfterYears}</span>
-                    <span class="time-label">month${monthsAfterYears > 1 ? 's' : ''} ${yearsLived ? '' : suffix}</span>
-                </div>
-                ` : ''}
-                ${remainingDays > 0 ? `
-                <div class="time-segment">
-                    <span class="time-value">${remainingDays}</span>
-                    <span class="time-label">day${remainingDays > 1 ? 's' : ''} ${(!yearsLived && !monthsAfterYears) ? suffix : ''}</span>
-                </div>
-                ` : ''}
-                <div class="time-segment">
-                    <span class="time-value">${String(hours).padStart(2, '0')}</span>
+                    <span class="time-value">${String(age.hours).padStart(2, '0')}</span>
                     <span class="time-label">hours</span>
                 </div>
                 <div class="time-segment">
-                    <span class="time-value">${String(minutes).padStart(2, '0')}</span>
+                    <span class="time-value">${String(age.minutes).padStart(2, '0')}</span>
                     <span class="time-label">minutes</span>
                 </div>
                 <div class="time-segment">
-                    <span class="time-value">${String(seconds).padStart(2, '0')}</span>
+                    <span class="time-value">${String(age.seconds).padStart(2, '0')}</span>
                     <span class="time-label">seconds</span>
                 </div>
-            `;
+            `);
+
+            return segments.join('');
         }
 
         function updateSeasonalColors() {
