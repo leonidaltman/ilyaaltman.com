@@ -127,6 +127,103 @@
             100% { opacity: 0; }
         }
 
+        /* Minimalistic Weather Widget */
+        .weather-widget {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            z-index: 10;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 16px;
+            padding: 1rem 1.25rem;
+            font-family: -apple-system, 'Inter', sans-serif;
+            text-align: center;
+            min-width: 120px;
+            transition: all 0.3s ease;
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+
+        .weather-widget.loaded {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .weather-widget:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+            cursor: default;
+        }
+
+        .weather-widget:hover::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: -2.5rem;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            font-size: 0.7rem;
+            padding: 0.4rem 0.6rem;
+            border-radius: 8px;
+            white-space: nowrap;
+            opacity: 0;
+            animation: tooltip-fade-in 0.3s ease-out 0.5s forwards;
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        @keyframes tooltip-fade-in {
+            from { opacity: 0; transform: translateX(-50%) translateY(5px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+
+        .weather-loading {
+            font-size: 1.5rem;
+            animation: weather-pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes weather-pulse {
+            0%, 100% { opacity: 0.6; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.1); }
+        }
+
+        .weather-location {
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.8);
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .weather-temp {
+            font-size: 1.5rem;
+            font-weight: 300;
+            color: white;
+            margin-bottom: 0.25rem;
+            font-feature-settings: "tnum";
+        }
+
+        .weather-condition {
+            font-size: 0.7rem;
+            color: rgba(255, 255, 255, 0.9);
+            font-weight: 400;
+            text-transform: capitalize;
+            line-height: 1.2;
+        }
+
+        /* Weather emoji/icons for different conditions */
+        .weather-condition::before {
+            content: attr(data-icon);
+            display: block;
+            font-size: 1.2rem;
+            margin-bottom: 0.2rem;
+        }
+
         /* Sky gradient presets for different conditions */
         .sky-dawn-clear {
             --sky-color-1: #FFB6C1;
@@ -393,6 +490,24 @@
             .weather-layer {
                 display: none !important;
             }
+
+            .weather-widget {
+                transition: none !important;
+                transform: none !important;
+            }
+
+            .weather-widget:hover {
+                transform: none !important;
+            }
+
+            .weather-loading {
+                animation: none !important;
+            }
+
+            .weather-widget:hover::after {
+                animation: none !important;
+                opacity: 1 !important;
+            }
         }
 
         /* High contrast mode support */
@@ -431,6 +546,17 @@
             .time-value {
                 font-size: 40px;
                 min-width: 70px;
+            }
+
+            .weather-widget {
+                top: 1.5rem;
+                right: 1.5rem;
+                padding: 0.8rem 1rem;
+                min-width: 110px;
+            }
+
+            .weather-temp {
+                font-size: 1.3rem;
             }
         }
 
@@ -491,6 +617,30 @@
             .message {
                 font-size: 14px;
                 margin-top: 1rem;
+            }
+
+            .weather-widget {
+                top: 1rem;
+                right: 1rem;
+                padding: 0.6rem 0.8rem;
+                min-width: 100px;
+                border-radius: 12px;
+            }
+
+            .weather-location {
+                font-size: 0.65rem;
+            }
+
+            .weather-temp {
+                font-size: 1.2rem;
+            }
+
+            .weather-condition {
+                font-size: 0.65rem;
+            }
+
+            .weather-condition::before {
+                font-size: 1rem;
             }
         }
 
@@ -564,6 +714,16 @@
     <!-- Modern 2025 Weather System -->
     <canvas id="weather-canvas"></canvas>
     <div class="lightning-flash" id="lightning-flash"></div>
+    
+    <!-- Minimalistic Weather Widget -->
+    <div class="weather-widget" id="weather-widget" role="complementary" aria-label="Current weather in Haifa">
+        <div class="weather-loading" id="weather-loading">📍</div>
+        <div class="weather-content" id="weather-content" style="display: none;">
+            <div class="weather-location">🇮🇱 Haifa</div>
+            <div class="weather-temp" id="weather-temp">--°</div>
+            <div class="weather-condition" id="weather-condition">Loading...</div>
+        </div>
+    </div>
 
     <main class="container">
         <header>
@@ -710,11 +870,13 @@
                 
                 console.log('Weather updated:', state.currentWeather);
                 updateSkyGradient();
+                updateWeatherWidget();
                 
             } catch (error) {
                 console.error('Failed to fetch weather data:', error);
                 // Fallback to time-based sky without weather
                 updateSkyGradient();
+                updateWeatherWidget(); // Show error state in widget
             }
         }
 
@@ -771,6 +933,104 @@
             if (weatherCode <= 99) return 'heavy-rain';               // Other rain
             
             return 'clear'; // fallback
+        }
+
+        function getWeatherDisplay(weatherCode) {
+            // Convert WMO weather codes to display info
+            const weatherMap = {
+                0: { text: 'Clear Sky', icon: '☀️' },
+                1: { text: 'Mainly Clear', icon: '🌤️' },
+                2: { text: 'Partly Cloudy', icon: '⛅' },
+                3: { text: 'Overcast', icon: '☁️' },
+                45: { text: 'Fog', icon: '🌫️' },
+                48: { text: 'Rime Fog', icon: '🌫️' },
+                51: { text: 'Light Drizzle', icon: '🌦️' },
+                53: { text: 'Drizzle', icon: '🌦️' },
+                55: { text: 'Dense Drizzle', icon: '🌧️' },
+                56: { text: 'Freezing Drizzle', icon: '🌨️' },
+                57: { text: 'Dense Freezing Drizzle', icon: '🌨️' },
+                61: { text: 'Slight Rain', icon: '🌧️' },
+                63: { text: 'Moderate Rain', icon: '🌧️' },
+                65: { text: 'Heavy Rain', icon: '🌧️' },
+                66: { text: 'Freezing Rain', icon: '🌨️' },
+                67: { text: 'Heavy Freezing Rain', icon: '🌨️' },
+                71: { text: 'Slight Snow', icon: '🌨️' },
+                73: { text: 'Moderate Snow', icon: '❄️' },
+                75: { text: 'Heavy Snow', icon: '❄️' },
+                77: { text: 'Snow Grains', icon: '🌨️' },
+                80: { text: 'Slight Showers', icon: '🌦️' },
+                81: { text: 'Moderate Showers', icon: '🌧️' },
+                82: { text: 'Violent Showers', icon: '🌧️' },
+                85: { text: 'Slight Snow Showers', icon: '🌨️' },
+                86: { text: 'Heavy Snow Showers', icon: '❄️' },
+                95: { text: 'Thunderstorm', icon: '⛈️' },
+                96: { text: 'Thunderstorm w/ Hail', icon: '⛈️' },
+                99: { text: 'Heavy Thunderstorm w/ Hail', icon: '⛈️' }
+            };
+
+            return weatherMap[weatherCode] || { text: 'Unknown', icon: '🌈' };
+        }
+
+        function updateWeatherWidget() {
+            const widget = document.getElementById('weather-widget');
+            const loading = document.getElementById('weather-loading');
+            const content = document.getElementById('weather-content');
+            const tempElement = document.getElementById('weather-temp');
+            const conditionElement = document.getElementById('weather-condition');
+
+            try {
+                if (!state.currentWeather) {
+                    // Show loading state
+                    loading.style.display = 'block';
+                    content.style.display = 'none';
+                    widget.classList.remove('loaded');
+                    return;
+                }
+
+                const weather = state.currentWeather;
+                const weatherDisplay = getWeatherDisplay(weather.weathercode);
+                
+                // Update temperature (round to nearest integer)
+                const temp = Math.round(weather.temperature);
+                tempElement.textContent = `${temp}°C`;
+                
+                // Update condition with icon
+                conditionElement.textContent = weatherDisplay.text;
+                conditionElement.setAttribute('data-icon', weatherDisplay.icon);
+                
+                // Add tooltip with additional info
+                const windSpeed = weather.windspeed ? `Wind: ${Math.round(weather.windspeed)} km/h` : '';
+                const timeNow = new Intl.DateTimeFormat('en-US', {
+                    timeZone: CONSTANTS.HAIFA_TIMEZONE,
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: false
+                }).format(new Date());
+                
+                const tooltipText = windSpeed ? 
+                    `${windSpeed} • Updated: ${timeNow}` : 
+                    `Updated: ${timeNow}`;
+                
+                widget.setAttribute('data-tooltip', tooltipText);
+                
+                // Show content and hide loading
+                loading.style.display = 'none';
+                content.style.display = 'block';
+                widget.classList.add('loaded');
+                
+                console.log(`🌤️ Weather widget updated: ${temp}°C, ${weatherDisplay.text}`);
+                
+            } catch (error) {
+                console.error('Error updating weather widget:', error);
+                
+                // Show error state
+                loading.style.display = 'none';
+                content.style.display = 'block';
+                tempElement.textContent = '--°';
+                conditionElement.textContent = 'Unavailable';
+                conditionElement.setAttribute('data-icon', '📍');
+                widget.classList.add('loaded');
+            }
         }
 
         // Modern 2025 Weather System - Canvas-based particle physics
@@ -1508,6 +1768,7 @@
                 
                 // Initial updates
                 updateTimer();
+                updateWeatherWidget(); // Initialize widget in loading state
                 fetchWeatherData(); // Initial weather fetch
                 
             } catch (error) {
