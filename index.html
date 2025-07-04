@@ -50,7 +50,6 @@
             --secondary-color: #86868b;
             --background-color: #fbfbfd;
             --text-color: #1d1d1f;
-            --water-color: rgba(0, 113, 227, 0.1);
         }
 
         body {
@@ -65,76 +64,6 @@
             background-color: var(--background-color);
             color: var(--text-color);
             -webkit-font-smoothing: antialiased;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .water-fill {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            background: linear-gradient(
-                180deg, 
-                var(--water-color) 0%,
-                rgba(0, 113, 227, 0.15) 100%
-            );
-            transition: height 0.5s ease-out;
-            z-index: 1;
-        }
-
-        .wave {
-            position: absolute;
-            top: -25px;
-            left: 0;
-            width: 200%;
-            height: 25px;
-            background: radial-gradient(
-                2px at 50% 50%, 
-                rgba(255, 255, 255, 0.15) 0%,
-                transparent 100%
-            ) repeat-x;
-            filter: blur(1px);
-            transform: translateX(calc(var(--mouse-x, 0) * 1px));
-            will-change: transform;
-        }
-
-        .wave1 {
-            opacity: 0.7;
-            background-size: 50px 25px;
-            animation: wave1 12s cubic-bezier(0.36, 0, 0.64, 1) infinite;
-        }
-
-        .wave2 {
-            opacity: 0.5;
-            top: -20px;
-            background-size: 40px 20px;
-            animation: wave2 15s cubic-bezier(0.36, 0, 0.64, 1) infinite;
-        }
-
-        .wave3 {
-            opacity: 0.3;
-            top: -15px;
-            background-size: 30px 15px;
-            animation: wave3 10s cubic-bezier(0.36, 0, 0.64, 1) infinite;
-        }
-
-        @keyframes wave1 {
-            0% { transform: translateX(calc(var(--mouse-x, 0) * 1px)) translateY(0); }
-            50% { transform: translateX(calc(-25% + var(--mouse-x, 0) * 1px)) translateY(2px); }
-            100% { transform: translateX(calc(0% + var(--mouse-x, 0) * 1px)) translateY(0); }
-        }
-
-        @keyframes wave2 {
-            0% { transform: translateX(calc(var(--mouse-x, 0) * 1px)) translateY(0); }
-            50% { transform: translateX(calc(-20% + var(--mouse-x, 0) * 1px)) translateY(-2px); }
-            100% { transform: translateX(calc(0% + var(--mouse-x, 0) * 1px)) translateY(0); }
-        }
-
-        @keyframes wave3 {
-            0% { transform: translateX(calc(var(--mouse-x, 0) * 1px)) translateY(0); }
-            50% { transform: translateX(calc(-30% + var(--mouse-x, 0) * 1px)) translateY(1px); }
-            100% { transform: translateX(calc(0% + var(--mouse-x, 0) * 1px)) translateY(0); }
         }
 
         .container {
@@ -218,16 +147,9 @@
 
         /* Reduced motion support */
         @media (prefers-reduced-motion: reduce) {
-            .wave, 
-            .water-fill,
-            .message,
-            .time-value {
+            * {
                 animation: none !important;
                 transition: none !important;
-            }
-            
-            .wave {
-                display: none;
             }
         }
 
@@ -238,7 +160,6 @@
                 --secondary-color: #000000;
                 --background-color: #ffffff;
                 --text-color: #000000;
-                --water-color: rgba(0, 0, 255, 0.3);
             }
         }
 
@@ -393,12 +314,6 @@
     </style>
 </head>
 <body>
-    <div class="water-fill" id="water-fill" role="presentation" aria-hidden="true">
-        <div class="wave wave1"></div>
-        <div class="wave wave2"></div>
-        <div class="wave wave3"></div>
-    </div>
-    
     <main class="container">
         <header>
             <h1>Ilya Altman</h1>
@@ -441,9 +356,6 @@
             MILLISECONDS_IN_HOUR: 1000 * 60 * 60,
             MILLISECONDS_IN_DAY: 1000 * 60 * 60 * 24,
             UPDATE_INTERVAL: 1000,
-            COLOR_UPDATE_INTERVAL: 1000 * 60 * 60, // 1 hour
-            MOUSE_INTERPOLATION_FACTOR: 0.08,
-            TRANSITION_DAYS: 15,
             MESSAGE_TRANSITION_DELAY: 200
         };
 
@@ -452,10 +364,6 @@
             birthDate: null,
             eighteenYears: null,
             timerInterval: null,
-            colorInterval: null,
-            animationFrame: null,
-            mouseX: 0,
-            mouseXInterpolated: 0,
             isHidden: false,
             lastMessage: '',
             hasError: false
@@ -667,10 +575,6 @@
             
             try {
                 const now = new Date();
-                const totalJourney = state.eighteenYears - state.birthDate;
-                
-                // Update water fill progress
-                updateWaterFill(now, totalJourney);
                 
                 // Calculate accurate age
                 const age = calculateAccurateAge(state.birthDate, now);
@@ -682,24 +586,11 @@
                 updateMessage(age.totalDays);
                 
                 // Update progress for screen readers
-                updateProgressForScreenReaders(now, totalJourney);
+                updateProgressForScreenReaders(now);
                 
             } catch (error) {
                 console.error('Error in updateTimer:', error);
                 showError('Timer update failed');
-            }
-        }
-
-        function updateWaterFill(now, totalJourney) {
-            try {
-                const progress = ((now - state.birthDate) / totalJourney) * 100;
-                const waterFill = document.getElementById('water-fill');
-                if (waterFill) {
-                    const clampedProgress = Math.max(0, Math.min(progress, 100));
-                    waterFill.style.height = `${clampedProgress}%`;
-                }
-            } catch (error) {
-                console.error('Error updating water fill:', error);
             }
         }
 
@@ -746,10 +637,11 @@
             }
         }
 
-        function updateProgressForScreenReaders(now, totalJourney) {
+        function updateProgressForScreenReaders(now) {
             try {
                 const progressElement = document.getElementById('progress-value');
                 if (progressElement) {
+                    const totalJourney = state.eighteenYears - state.birthDate;
                     const progress = ((now - state.birthDate) / totalJourney) * 100;
                     const roundedProgress = Math.round(Math.max(0, Math.min(progress, 100)));
                     progressElement.textContent = `${roundedProgress}%`;
@@ -836,157 +728,7 @@
             return segments.join('');
         }
 
-        function updateSeasonalColors() {
-            if (state.hasError || state.isHidden) return;
-            
-            try {
-                const now = new Date();
-                const month = now.getMonth();
-                const day = now.getDate();
-                const root = document.documentElement;
-            
-            // Astronomical seasons with exact dates and gradual color transitions
-            const seasons = {
-                winter: {
-                    start: { month: 11, day: 21 },  // December 21
-                    end: { month: 2, day: 19 },     // March 19
-                    mainColor: 'rgba(0, 149, 255, 0.1)',
-                    transitionColor: 'rgba(64, 196, 255, 0.1)'  // Transitions to spring
-                },
-                spring: {
-                    start: { month: 2, day: 20 },    // March 20
-                    end: { month: 5, day: 20 },      // June 20
-                    mainColor: 'rgba(64, 196, 255, 0.1)',
-                    transitionColor: 'rgba(0, 183, 255, 0.1)'   // Transitions to summer
-                },
-                summer: {
-                    start: { month: 5, day: 21 },    // June 21
-                    end: { month: 8, day: 22 },      // September 22
-                    mainColor: 'rgba(0, 183, 255, 0.1)',
-                    transitionColor: 'rgba(0, 113, 227, 0.1)'   // Transitions to fall
-                },
-                fall: {
-                    start: { month: 8, day: 23 },    // September 23
-                    end: { month: 11, day: 20 },     // December 20
-                    mainColor: 'rgba(0, 113, 227, 0.1)',
-                    transitionColor: 'rgba(0, 149, 255, 0.1)'   // Transitions to winter
-                }
-            };
 
-            function isDateInRange(month, day, start, end) {
-                const currentDate = month * 100 + day;
-                const startDate = start.month * 100 + start.day;
-                const endDate = end.month * 100 + end.day;
-
-                // Handle year wrap (winter)
-                if (startDate > endDate) {
-                    return currentDate >= startDate || currentDate <= endDate;
-                }
-                return currentDate >= startDate && currentDate <= endDate;
-            }
-
-            function calculateTransitionProgress(month, day, season) {
-                const daysInTransition = CONSTANTS.TRANSITION_DAYS;
-                const currentDate = new Date(now.getFullYear(), month, day);
-                
-                // Calculate days from season start/end
-                const seasonStart = new Date(now.getFullYear(), season.start.month, season.start.day);
-                const seasonEnd = new Date(now.getFullYear(), season.end.month, season.end.day);
-                
-                // Handle year wrap for winter
-                if (season.start.month === 11 && month < 2) {
-                    seasonStart.setFullYear(seasonStart.getFullYear() - 1);
-                }
-                
-                const daysFromStart = Math.abs((currentDate - seasonStart) / (1000 * 60 * 60 * 24));
-                const daysToEnd = Math.abs((seasonEnd - currentDate) / (1000 * 60 * 60 * 24));
-                
-                if (daysFromStart < daysInTransition) {
-                    return daysFromStart / daysInTransition;
-                } else if (daysToEnd < daysInTransition) {
-                    return 1 - (daysToEnd / daysInTransition);
-                }
-                return 1;
-            }
-
-            function interpolateColors(color1, color2, progress) {
-                const regex = /rgba\((\d+),\s*(\d+),\s*(\d+),\s*([\d.]+)\)/;
-                const [_, r1, g1, b1, a1] = color1.match(regex).map(Number);
-                const [__, r2, g2, b2, a2] = color2.match(regex).map(Number);
-                
-                const r = Math.round(r1 + (r2 - r1) * progress);
-                const g = Math.round(g1 + (g2 - g1) * progress);
-                const b = Math.round(b1 + (b2 - b1) * progress);
-                const a = Number((a1 + (a2 - a1) * progress).toFixed(3));
-                
-                return `rgba(${r}, ${g}, ${b}, ${a})`;
-            }
-
-            let currentSeason = 'winter';
-            let color = seasons.winter.mainColor;
-
-            // Determine current season and calculate color
-            for (const [season, dates] of Object.entries(seasons)) {
-                if (isDateInRange(month, day, dates.start, dates.end)) {
-                    currentSeason = season;
-                    const progress = calculateTransitionProgress(month, day, dates);
-                    color = interpolateColors(dates.mainColor, dates.transitionColor, progress);
-                    break;
-                }
-            }
-
-                // Update CSS variable
-                root.style.setProperty('--water-color', color);
-            } catch (error) {
-                console.error('Error updating seasonal colors:', error);
-            }
-        }
-
-        // Throttled mouse movement handler
-        function throttle(func, delay) {
-            let timeoutId;
-            let lastExecTime = 0;
-            return function (...args) {
-                const currentTime = Date.now();
-                if (currentTime - lastExecTime > delay) {
-                    func.apply(this, args);
-                    lastExecTime = currentTime;
-                } else {
-                    clearTimeout(timeoutId);
-                    timeoutId = setTimeout(() => {
-                        func.apply(this, args);
-                        lastExecTime = Date.now();
-                    }, delay - (currentTime - lastExecTime));
-                }
-            };
-        }
-
-        function updateWaves() {
-            if (state.hasError || state.isHidden) return;
-            
-            try {
-                // Only update if there's actual movement
-                const dx = state.mouseX - state.mouseXInterpolated;
-                if (Math.abs(dx) > 0.1) {
-                    state.mouseXInterpolated += dx * CONSTANTS.MOUSE_INTERPOLATION_FACTOR;
-                    document.documentElement.style.setProperty('--mouse-x', state.mouseXInterpolated);
-                }
-                
-                // Continue animation loop
-                state.animationFrame = requestAnimationFrame(updateWaves);
-            } catch (error) {
-                console.error('Error in updateWaves:', error);
-            }
-        }
-
-        const handleMouseMove = throttle((e) => {
-            try {
-                const centerX = window.innerWidth / 2;
-                state.mouseX = (e.clientX - centerX) / 10;
-            } catch (error) {
-                console.error('Error handling mouse move:', error);
-            }
-        }, 16); // ~60fps
 
         function startTimers() {
             if (state.hasError) return;
@@ -994,19 +736,12 @@
             try {
                 // Clear existing intervals
                 if (state.timerInterval) clearInterval(state.timerInterval);
-                if (state.colorInterval) clearInterval(state.colorInterval);
-                if (state.animationFrame) cancelAnimationFrame(state.animationFrame);
                 
-                // Start new intervals
+                // Start timer
                 state.timerInterval = setInterval(updateTimer, CONSTANTS.UPDATE_INTERVAL);
-                state.colorInterval = setInterval(updateSeasonalColors, CONSTANTS.COLOR_UPDATE_INTERVAL);
                 
-                // Initial updates
+                // Initial update
                 updateTimer();
-                updateSeasonalColors();
-                
-                // Start wave animation
-                updateWaves();
             } catch (error) {
                 console.error('Error starting timers:', error);
                 showError('Failed to start timers');
@@ -1015,8 +750,6 @@
 
         function cleanup() {
             if (state.timerInterval) clearInterval(state.timerInterval);
-            if (state.colorInterval) clearInterval(state.colorInterval);
-            if (state.animationFrame) cancelAnimationFrame(state.animationFrame);
         }
 
         // Initialize the application
@@ -1025,7 +758,6 @@
                 if (!initializeDates()) return;
                 
                 // Add event listeners
-                document.addEventListener('mousemove', handleMouseMove, { passive: true });
                 document.addEventListener('visibilitychange', handleVisibilityChange);
                 window.addEventListener('beforeunload', cleanup);
                 
